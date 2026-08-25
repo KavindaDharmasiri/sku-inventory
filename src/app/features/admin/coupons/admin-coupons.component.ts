@@ -167,7 +167,17 @@ export class AdminCouponsComponent implements OnInit {
   loading = signal(true);
   deletingId = signal<number | null>(null);
 
-  form: any = this.emptyForm();
+  form: any = {
+    code: '',
+    discountType: 'percent',
+    discountValue: 0,
+    minSubtotal: 0,
+    description: '',
+    validFrom: '',
+    validUntil: '',
+    maxUses: '',
+    isActive: true,
+  };
 
   ngOnInit(): void {
     this.load();
@@ -186,7 +196,7 @@ export class AdminCouponsComponent implements OnInit {
       this.editing.set(coupon);
       this.form = {
         code: coupon.code || '',
-        discountType: coupon.discountType || 'percent',
+        discountType: coupon.discountType || 'percentage',
         discountValue: coupon.discountValue ?? 0,
         minSubtotal: coupon.minSubtotal ?? 0,
         description: coupon.description || '',
@@ -197,7 +207,17 @@ export class AdminCouponsComponent implements OnInit {
       };
     } else {
       this.editing.set(null);
-      this.form = this.emptyForm();
+      this.form = {
+        code: '',
+        discountType: 'percentage',
+        discountValue: 0,
+        minSubtotal: 0,
+        description: '',
+        validFrom: '',
+        validUntil: '',
+        maxUses: '',
+        isActive: true,
+      };
     }
     this.showForm.set(true);
   }
@@ -205,7 +225,6 @@ export class AdminCouponsComponent implements OnInit {
   closeForm(): void {
     this.showForm.set(false);
     this.editing.set(null);
-    this.form = this.emptyForm();
   }
 
   save(): void {
@@ -254,31 +273,5 @@ export class AdminCouponsComponent implements OnInit {
       },
       complete: () => { this.deletingId.set(null); },
     });
-      next: (res) => {
-        if (res?.success) {
-          this.toast.success('Coupon deleted');
-          this.load();
-        } else {
-          this.toast.error(res?.error || 'Failed to delete coupon');
-        }
-      },
-      error: (err) => {
-        this.toast.error(err?.error?.error || 'Failed to delete coupon');
-      },
-    });
-  }
-
-  private emptyForm(): any {
-    return {
-      code: '',
-      discountType: 'percent',
-      discountValue: 0,
-      minSubtotal: 0,
-      description: '',
-      validFrom: '',
-      validUntil: '',
-      maxUses: '',
-      isActive: true,
-    };
   }
 }

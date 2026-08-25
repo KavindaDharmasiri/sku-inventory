@@ -171,7 +171,17 @@ export class AdminDiscountsComponent implements OnInit {
   loading = signal(true);
   deletingId = signal<number | null>(null);
 
-  form: any = this.emptyForm();
+  form: any = {
+    scope: 'product',
+    discountType: 'percentage',
+    discountValue: 0,
+    productId: '',
+    categoryId: '',
+    subcategoryId: '',
+    validFrom: '',
+    validUntil: '',
+    isActive: true,
+  };
 
   ngOnInit(): void {
     this.load();
@@ -190,7 +200,7 @@ export class AdminDiscountsComponent implements OnInit {
       this.editing.set(discount);
       this.form = {
         scope: discount.scope || 'product',
-        discountType: discount.discountType || 'percent',
+        discountType: discount.discountType || 'percentage',
         discountValue: discount.discountValue ?? 0,
         productId: discount.productId ?? '',
         categoryId: discount.categoryId ?? '',
@@ -201,7 +211,17 @@ export class AdminDiscountsComponent implements OnInit {
       };
     } else {
       this.editing.set(null);
-      this.form = this.emptyForm();
+      this.form = {
+        scope: 'product',
+        discountType: 'percentage',
+        discountValue: 0,
+        productId: '',
+        categoryId: '',
+        subcategoryId: '',
+        validFrom: '',
+        validUntil: '',
+        isActive: true,
+      };
     }
     this.showForm.set(true);
   }
@@ -209,7 +229,6 @@ export class AdminDiscountsComponent implements OnInit {
   closeForm(): void {
     this.showForm.set(false);
     this.editing.set(null);
-    this.form = this.emptyForm();
   }
 
   save(): void {
@@ -271,31 +290,5 @@ export class AdminDiscountsComponent implements OnInit {
       },
       complete: () => { this.deletingId.set(null); },
     });
-      next: (res) => {
-        if (res?.success) {
-          this.toast.success('Discount deleted');
-          this.load();
-        } else {
-          this.toast.error(res?.error || 'Failed to delete discount');
-        }
-      },
-      error: (err) => {
-        this.toast.error(err?.error?.error || 'Failed to delete discount');
-      },
-    });
-  }
-
-  private emptyForm(): any {
-    return {
-      scope: 'product',
-      discountType: 'percent',
-      discountValue: 0,
-      productId: '',
-      categoryId: '',
-      subcategoryId: '',
-      validFrom: '',
-      validUntil: '',
-      isActive: true,
-    };
   }
 }

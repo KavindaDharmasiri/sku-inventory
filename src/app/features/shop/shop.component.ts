@@ -251,7 +251,7 @@ export class ShopComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   cart = inject(CartService);
   private toast = inject(ToastService);
-  private auth = inject(AuthService);
+  auth = inject(AuthService);
   i18n = inject(I18nService);
 
   @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;

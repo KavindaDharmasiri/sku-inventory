@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 import { query } from '../db';
-import { bcrypt, signToken, authLimiter } from '../middleware/auth';
+import { bcrypt, signToken } from '../middleware/auth';
+import { authLimiter } from '../middleware/rate-limit';
 
 export const authRouter = Router();
 

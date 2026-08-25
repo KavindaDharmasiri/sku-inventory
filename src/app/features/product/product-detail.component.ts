@@ -504,7 +504,7 @@ export class ProductDetailComponent implements OnInit {
           this.toast.success('Review submitted');
           this.reviewRating.set(0);
           this.reviewComment.set('');
-          this.loadProduct(p.id);
+          this.loadProduct(String(p.id));
         }
         this.submittingReview.set(false);
       },
