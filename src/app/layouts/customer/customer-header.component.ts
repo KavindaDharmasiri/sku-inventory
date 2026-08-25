@@ -34,7 +34,8 @@ import { NgClass } from '@angular/common';
           </button>
 
           <!-- Logo -->
-          <a routerLink="/" class="flex items-center gap-2 group">
+          <a routerLink="/" class="flex items-center gap-2.5 group">
+            <img src="assets/skuvo-icon.svg" alt="" class="h-8 w-8 transition-transform duration-200 group-hover:scale-110">
             <span class="text-xl lg:text-2xl font-display font-bold tracking-tight text-neutral-900 dark:text-white
                          group-hover:text-primary transition-colors duration-200">
               {{ i18n.t('app.name') }}

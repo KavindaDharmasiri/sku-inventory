@@ -19,8 +19,11 @@ import { I18nService } from '../../../core/services/i18n.service';
         <div class="absolute top-1/3 right-1/4 w-80 h-80 bg-primary/15 rounded-full blur-[100px]"></div>
         <div class="absolute bottom-1/3 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-[80px]"></div>
         <div class="relative z-10 px-16 max-w-lg">
-          <a routerLink="/" class="text-4xl font-display font-bold text-white tracking-tight">
-            {{ i18n.t('app.name') }}
+          <a routerLink="/" class="flex items-center gap-3 group">
+            <img src="assets/skuvo-icon.svg" alt="" class="h-10 w-10 transition-transform duration-200 group-hover:scale-110">
+            <span class="text-4xl font-display font-bold text-white tracking-tight">
+              {{ i18n.t('app.name') }}
+            </span>
           </a>
           <p class="mt-5 text-neutral-400 text-lg leading-relaxed">
             Join a community of style-conscious individuals. Your wardrobe deserves better.

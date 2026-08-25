@@ -1,0 +1,75 @@
+<svg width="1920" height="800" viewBox="0 0 1920 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="baseD" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1c1813"/>
+      <stop offset="50%" stop-color="#181511"/>
+      <stop offset="100%" stop-color="#14110d"/>
+    </linearGradient>
+    <radialGradient id="blobGradD" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#f0a870"/>
+      <stop offset="60%" stop-color="#e2905a"/>
+      <stop offset="100%" stop-color="#b8703c"/>
+    </radialGradient>
+    <pattern id="threadsD" width="140" height="140" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
+      <line x1="0" y1="0" x2="0" y2="140" stroke="#e2905a" stroke-opacity="0.06" stroke-width="1"/>
+      <line x1="70" y1="0" x2="70" y2="140" stroke="#f4eee2" stroke-opacity="0.03" stroke-width="1"/>
+    </pattern>
+    <filter id="softshadowD" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="26" stdDeviation="30" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="40" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1920" height="800" fill="url(#baseD)"/>
+  <rect width="1920" height="800" fill="url(#threadsD)"/>
+
+  <!-- ambient glow blobs -->
+  <ellipse cx="120" cy="90" rx="420" ry="300" fill="#e2905a" opacity="0.07"/>
+  <ellipse cx="60" cy="740" rx="380" ry="260" fill="#f4eee2" opacity="0.04"/>
+
+  <!-- rim-lit halo behind main blob -->
+  <ellipse cx="1550" cy="410" rx="480" ry="380" fill="#e2905a" opacity="0.16" filter="url(#glow)"/>
+
+  <g filter="url(#softshadowD)">
+    <path d="M1310 90
+             C 1520 60, 1720 150, 1790 340
+             C 1860 530, 1780 700, 1580 740
+             C 1400 776, 1220 720, 1160 560
+             C 1100 400, 1130 220, 1250 130
+             C 1270 114, 1290 100, 1310 90 Z"
+          fill="url(#blobGradD)"/>
+  </g>
+
+  <g transform="translate(1265,55) scale(1.35)">
+    <ellipse cx="180" cy="500" rx="110" ry="14" fill="#000000" opacity="0.35"/>
+    <path d="M150 330 L140 470 L165 470 L175 350 Z" fill="#14110d"/>
+    <path d="M205 330 L220 470 L195 470 L182 350 Z" fill="#14110d"/>
+    <path d="M120 200 C120 160 145 140 180 140 C215 140 240 160 240 200 L248 340 C220 358 140 358 112 340 Z" fill="#221c15" stroke="#f4eee2" stroke-width="2.5"/>
+    <path d="M155 150 C165 175 195 175 205 150 L212 230 L148 230 Z" fill="#3a2c20"/>
+    <path d="M120 190 C95 210 82 250 90 300" stroke="#14110d" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <path d="M240 190 C268 214 282 258 274 305" stroke="#14110d" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <circle cx="180" cy="100" r="42" fill="#d8ab84"/>
+    <path d="M138 95 C132 55 228 55 222 95 C222 70 205 60 180 60 C155 60 138 70 138 95Z" fill="#14110d"/>
+    <ellipse cx="180" cy="72" rx="46" ry="10" fill="#14110d"/>
+    <path d="M150 72 C150 45 210 45 210 72 Z" fill="#14110d"/>
+    <rect x="150" y="98" width="24" height="14" rx="6" fill="#14110d"/>
+    <rect x="186" y="98" width="24" height="14" rx="6" fill="#14110d"/>
+    <line x1="174" y1="104" x2="186" y2="104" stroke="#14110d" stroke-width="2"/>
+
+    <g transform="translate(64,300)">
+      <path d="M0 30 L54 30 L48 96 L6 96 Z" fill="#f4eee2"/>
+      <path d="M14 30 C14 12 40 12 40 30" stroke="#14110d" stroke-width="5" fill="none"/>
+    </g>
+    <g transform="translate(232,296)">
+      <path d="M0 24 L58 24 L52 100 L6 100 Z" fill="#14110d"/>
+      <path d="M15 24 C15 4 43 4 43 24" stroke="#f4eee2" stroke-width="5" fill="none"/>
+    </g>
+    <g transform="translate(258,286)">
+      <path d="M0 20 L46 20 L41 84 L5 84 Z" fill="#3a2c20" stroke="#f4eee2" stroke-width="2"/>
+      <path d="M11 20 C11 4 35 4 35 20" stroke="#f4eee2" stroke-width="4" fill="none"/>
+    </g>
+  </g>
+</svg>

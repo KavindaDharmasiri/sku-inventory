@@ -29,6 +29,11 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
           </p>
         </div>
 
+        <div class="mt-10 animate-[fadeUp_0.8s_ease-out_0.05s_both]">
+          <img src="assets/skuvo-logo-light.svg" alt="" class="h-14 mx-auto dark:hidden">
+          <img src="assets/skuvo-logo-dark.svg" alt="" class="h-14 mx-auto hidden dark:block">
+        </div>
+
         <h1 class="text-5xl sm:text-7xl lg:text-[5.5rem] font-display font-bold text-white
                    tracking-tight leading-[0.95] animate-[fadeUp_0.8s_ease-out_0.1s_both]">
           {{ i18n.t('hero.title') }}

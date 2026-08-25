@@ -25,10 +25,8 @@ import { NgClass } from '@angular/common';
       <div class="flex flex-col h-full">
         <!-- Logo -->
         <div class="flex items-center justify-between h-16 px-5 border-b border-neutral-100 dark:border-neutral-800/80 shrink-0">
-          <a routerLink="/admin" class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-sm">
-              <span class="text-white text-sm font-bold">{{ i18n.t('app.name')[0] || 'S' }}</span>
-            </div>
+          <a routerLink="/admin" class="flex items-center gap-2.5 group">
+            <img src="assets/skuvo-icon.svg" alt="" class="h-8 w-8 transition-transform duration-200 group-hover:scale-110">
             <div class="flex items-baseline gap-1.5">
               <span class="text-lg font-display font-bold text-neutral-900 dark:text-white tracking-tight">
                 {{ i18n.t('app.name') }}

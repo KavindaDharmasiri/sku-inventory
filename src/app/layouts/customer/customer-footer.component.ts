@@ -15,8 +15,11 @@ import { ToastService } from '../../core/services/toast.service';
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
           <!-- Brand + Newsletter -->
           <div class="lg:col-span-2">
-            <a routerLink="/" class="text-2xl font-display font-bold text-white tracking-tight">
-              {{ i18n.t('app.name') }}
+            <a routerLink="/" class="flex items-center gap-2.5 group">
+              <img src="assets/skuvo-icon.svg" alt="" class="h-8 w-8">
+              <span class="text-2xl font-display font-bold text-white tracking-tight group-hover:text-primary transition-colors">
+                {{ i18n.t('app.name') }}
+              </span>
             </a>
             <p class="mt-4 text-sm text-neutral-500 leading-relaxed max-w-sm">
               {{ i18n.t('footer.newsletterText') }}
