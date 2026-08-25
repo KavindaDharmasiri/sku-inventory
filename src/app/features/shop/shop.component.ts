@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ViewChild, ElementRef, effect } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -20,7 +20,7 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
           <h1 class="text-2xl sm:text-3xl font-display font-bold text-neutral-900 dark:text-white">
             {{ i18n.t('shop.title') }}
           </h1>
-          <p class="mt-1 text-sm text-neutral-500">{{ products().length }} products</p>
+          <p class="mt-1 text-sm text-neutral-500">{{ totalProducts() }} products</p>
         </div>
 
         <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -42,7 +42,7 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                     d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
             </svg>
-            <input #searchInput type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+            <input #searchInput type="text" [ngModel]="searchTerm()" (ngModelChange)="onSearchChange($event)"
                    [placeholder]="i18n.t('nav.search')"
                    class="w-full sm:w-64 pl-10 pr-4 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-200
                           dark:border-neutral-700 rounded-xl text-sm focus:outline-none focus:ring-2
@@ -57,7 +57,6 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
             <option value="newest">{{ i18n.t('shop.sortOptions.newest') }}</option>
             <option value="priceLow">{{ i18n.t('shop.sortOptions.priceLow') }}</option>
             <option value="priceHigh">{{ i18n.t('shop.sortOptions.priceHigh') }}</option>
-            <option value="popular">{{ i18n.t('shop.sortOptions.popular') }}</option>
           </select>
         </div>
       </div>
@@ -70,7 +69,7 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
                (click)="filtersOpen.set(false)"></div>
         }
 
-        <!-- Sidebar filters (drawer on mobile, static on desktop) -->
+        <!-- Sidebar filters -->
         <aside [class.hidden]="!filtersOpen()"
                [class.-translate-x-full]="!filtersOpen()"
                [class.translate-x-0]="filtersOpen()"
@@ -98,8 +97,8 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
                 @for (cat of categories(); track cat.id) {
                   <label class="flex items-center gap-2.5 text-sm text-neutral-600 dark:text-neutral-400
                                hover:text-neutral-900 dark:hover:text-white cursor-pointer transition-colors">
-                    <input type="checkbox" [checked]="selectedCategories().includes(cat.id)"
-                           (change)="toggleCategory(cat.id)"
+                    <input type="checkbox" [checked]="selectedCategory() === cat.id"
+                           (change)="onCategoryToggle(cat.id)"
                            class="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary">
                     {{ cat.name }}
                   </label>
@@ -107,21 +106,23 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
               </div>
             </div>
 
-            <!-- Price range -->
+            <!-- Price range (client-side) -->
             <div>
               <h3 class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Price Range</h3>
               <div class="flex items-center gap-2">
                 <input type="number" placeholder="Min" [(ngModel)]="priceMin"
+                       (ngModelChange)="onClientFilterChange()"
                        class="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200
                               dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:border-primary">
                 <span class="text-neutral-400">–</span>
                 <input type="number" placeholder="Max" [(ngModel)]="priceMax"
+                       (ngModelChange)="onClientFilterChange()"
                        class="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200
                               dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:border-primary">
               </div>
             </div>
 
-            <!-- Sale toggle -->
+            <!-- Sale toggle (client-side) -->
             <label class="flex items-center gap-2.5 text-sm text-neutral-600 dark:text-neutral-400
                          hover:text-neutral-900 dark:hover:text-white cursor-pointer transition-colors">
               <input type="checkbox" [checked]="onlySale()" (change)="onlySale.set(!onlySale())"
@@ -146,13 +147,13 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
                 </div>
               }
             </div>
-          } @else if (filteredProducts().length === 0) {
+          } @else if (displayedProducts().length === 0) {
             <div class="text-center py-20">
               <p class="text-neutral-400 text-lg">{{ i18n.t('shop.noProducts') }}</p>
             </div>
           } @else {
             <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              @for (product of filteredProducts(); track product.id; let i = $index) {
+              @for (product of displayedProducts(); track product.id; let i = $index) {
                 <a [routerLink]="['/product', product.id]"
                    [style.animationDelay]="(i * 50) + 'ms'"
                    class="group bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100
@@ -199,13 +200,39 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
                 </a>
               }
             </div>
+
+            <!-- Pagination -->
+            @if (totalPages() > 1) {
+              <div class="flex items-center justify-center gap-2 mt-8">
+                <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() <= 1"
+                        class="px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
+                               hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed
+                               text-neutral-600 dark:text-neutral-400 transition-colors cursor-pointer">
+                  Prev
+                </button>
+                @for (p of visiblePages(); track p) {
+                  <button (click)="goToPage(p)"
+                          [class]="p === currentPage()
+                            ? 'px-3 py-2 text-sm rounded-lg bg-primary text-white font-medium'
+                            : 'px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-primary text-neutral-600 dark:text-neutral-400 transition-colors cursor-pointer'">
+                    {{ p }}
+                  </button>
+                }
+                <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() >= totalPages()"
+                        class="px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
+                               hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed
+                               text-neutral-600 dark:text-neutral-400 transition-colors cursor-pointer">
+                  Next
+                </button>
+              </div>
+            }
           }
         </div>
       </div>
     </div>
   `,
 })
-export class ShopComponent implements OnInit {
+export class ShopComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private route = inject(ActivatedRoute);
   cart = inject(CartService);
@@ -220,54 +247,137 @@ export class ShopComponent implements OnInit {
   filtersOpen = signal(false);
   searchTerm = signal('');
   sortBy = signal('newest');
-  selectedCategories = signal<number[]>([]);
+  selectedCategory = signal<number | null>(null);
   onlySale = signal(false);
   priceMin = '';
   priceMax = '';
+  currentPage = signal(1);
+  totalProducts = signal(0);
+  totalPages = signal(0);
 
-  filteredProducts = computed(() => {
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
+  private pendingCategory = '';
+  private clientFilterVersion = signal(0);
+
+  displayedProducts = computed(() => {
+    this.clientFilterVersion();
     let items = [...this.products()];
-    const search = this.searchTerm().toLowerCase();
-    const cats = this.selectedCategories();
     const sale = this.onlySale();
+    const min = this.priceMin ? Number(this.priceMin) : null;
+    const max = this.priceMax ? Number(this.priceMax) : null;
 
-    if (search) items = items.filter(p => p.prodName.toLowerCase().includes(search));
-    if (cats.length) items = items.filter(p => cats.includes(p.categoryId));
     if (sale) items = items.filter(p => p.isOnSale);
-
-    switch (this.sortBy()) {
-      case 'priceLow': items.sort((a, b) => a.prodPrice - b.prodPrice); break;
-      case 'priceHigh': items.sort((a, b) => b.prodPrice - a.prodPrice); break;
-      case 'newest': items.sort((a, b) => (b.id || 0) - (a.id || 0)); break;
-    }
+    if (min !== null && !isNaN(min)) items = items.filter(p => p.prodPrice >= min);
+    if (max !== null && !isNaN(max)) items = items.filter(p => p.prodPrice <= max);
 
     return items;
   });
 
+  visiblePages = computed(() => {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages: number[] = [];
+    pages.push(1);
+    if (current > 3) pages.push(-1);
+    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+      pages.push(i);
+    }
+    if (current < total - 2) pages.push(-2);
+    pages.push(total);
+    return pages;
+  });
+
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
-      // Every explicit navigation starts from a clean slate, then applies
-      // whatever the URL asks for (category / sort / search focus).
-      this.selectedCategories.set([]);
-      this.pendingCategory = '';
       this.searchTerm.set('');
+      this.selectedCategory.set(null);
       this.onlySale.set(false);
       this.priceMin = '';
       this.priceMax = '';
       this.sortBy.set('newest');
+      this.currentPage.set(1);
 
       if (params['category']) this.pendingCategory = String(params['category']);
       if (params['sort']) this.sortBy.set(String(params['sort']));
       if (params['search'] !== undefined) {
         setTimeout(() => this.searchInput?.nativeElement.focus(), 50);
       }
-      this.applyPendingCategory();
+      this.loadCategories();
     });
+
     this.loadProducts();
-    this.loadCategories();
   }
 
-  private pendingCategory = '';
+  ngOnDestroy(): void {
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+  }
+
+  onSearchChange(value: string): void {
+    this.searchTerm.set(value);
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => {
+      this.currentPage.set(1);
+      this.loadProducts();
+    }, 350);
+  }
+
+  onCategoryToggle(id: number): void {
+    this.selectedCategory.set(this.selectedCategory() === id ? null : id);
+    this.currentPage.set(1);
+    this.loadProducts();
+  }
+
+  onClientFilterChange(): void {
+    this.clientFilterVersion.update(v => v + 1);
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages()) return;
+    this.currentPage.set(page);
+    this.loadProducts();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  private loadProducts(): void {
+    this.loading.set(true);
+    const params: Record<string, string> = {
+      page: String(this.currentPage()),
+      limit: '20',
+    };
+    const search = this.searchTerm().trim();
+    if (search) params['q'] = search;
+    const cat = this.selectedCategory();
+    if (cat) params['categoryId'] = String(cat);
+    const sort = this.sortBy();
+    if (sort && sort !== 'newest') params['sort'] = sort;
+
+    this.api.get<Product[]>('/products', params).subscribe({
+      next: (res: any) => {
+        this.products.set(res?.data || []);
+        const pag = res?.pagination;
+        this.totalProducts.set(pag?.total || 0);
+        this.totalPages.set(pag?.totalPages || 1);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.toast.error('Failed to load products');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private loadCategories(): void {
+    this.api.get<any[]>('/categories').subscribe({
+      next: (res) => {
+        if (res?.data) {
+          this.categories.set(res.data);
+          this.applyPendingCategory();
+        }
+      },
+      error: () => { this.toast.error('Failed to load categories'); },
+    });
+  }
 
   private applyPendingCategory(): void {
     if (!this.pendingCategory) return;
@@ -275,29 +385,11 @@ export class ShopComponent implements OnInit {
     if (!cats.length) return;
     const match = cats.find(c => c.name.toLowerCase() === this.pendingCategory.toLowerCase());
     if (match) {
-      this.selectedCategories.set([match.id]);
+      this.selectedCategory.set(match.id);
       this.pendingCategory = '';
+      this.currentPage.set(1);
+      this.loadProducts();
     }
-  }
-
-  private loadProducts(): void {
-    this.api.get<Product[]>('/products').subscribe({
-      next: (res) => { this.products.set(res?.data || []); this.loading.set(false); },
-      error: () => { this.toast.error('Failed to load products'); this.loading.set(false); },
-    });
-  }
-
-  private loadCategories(): void {
-    this.api.get<any[]>('/categories').subscribe({
-      next: (res) => { if (res?.data) { this.categories.set(res.data); this.applyPendingCategory(); } },
-      error: () => { this.toast.error('Failed to load categories'); },
-    });
-  }
-
-  toggleCategory(id: number): void {
-    this.selectedCategories.update(c =>
-      c.includes(id) ? c.filter(x => x !== id) : [...c, id]
-    );
   }
 
   addToCart(product: Product, event: Event): void {
