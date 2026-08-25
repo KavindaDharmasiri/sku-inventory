@@ -4,7 +4,7 @@
   "installCommand": "npm install",
   "framework": null,
   "functions": {
-    "api/index.ts": {
+    "api/index.mts": {
       "includeFiles": "dist/skuvo/**",
       "maxDuration": 30
     }

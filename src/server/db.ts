@@ -3,8 +3,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 // Load npm packages at runtime (outside the bundler) so they work identically
-// in `ng serve` (Vite) and the production server (esbuild).
-const require_ = createRequire(import.meta.url);
+// in `ng serve` (Vite), the production server (esbuild), and Vercel serverless.
+// Using process.cwd() ensures node_modules is found regardless of where the
+// bundled output file lives (e.g. dist/skuvo/server/server.mjs).
+const require_ = createRequire(join(process.cwd(), 'package.json'));
 
 // Minimal .env loader (no dependency on dotenv at runtime).
 function loadEnv(): void {
