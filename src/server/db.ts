@@ -1,18 +1,10 @@
-import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Load npm packages at runtime (outside the bundler) so they work identically
-// in `ng serve` (Vite), the production server (esbuild), and Vercel serverless.
-// Using process.cwd() ensures node_modules is found regardless of where the
-// bundled output file lives (e.g. dist/skuvo/server/server.mjs).
-const require_ = createRequire(join(process.cwd(), 'package.json'));
-
-// Minimal .env loader (no dependency on dotenv at runtime).
 function loadEnv(): void {
   const candidates = [
     join(process.cwd(), '.env'),
-    join(import.meta.dirname, '../../.env'),
+    join(import.meta.dirname ?? '.', '../../.env'),
   ];
   for (const path of candidates) {
     try {
@@ -40,12 +32,13 @@ type PgPool = {
 
 let pool: PgPool | null = null;
 
-export function getPool(): PgPool {
+export async function getPool(): Promise<PgPool> {
   if (pool) return pool;
   if (!process.env['DATABASE_URL']) {
     throw new Error('DATABASE_URL environment variable is not set (.env file missing?)');
   }
-  const { Pool: PgPoolCtor } = require_('pg');
+  const pg = await import('pg');
+  const { Pool: PgPoolCtor } = pg as any;
   pool = new PgPoolCtor({
     connectionString: process.env['DATABASE_URL'],
     ssl: { rejectUnauthorized: false },
@@ -55,8 +48,10 @@ export function getPool(): PgPool {
   return pool as PgPool;
 }
 
-export function query<T = any>(text: string, params: unknown[] = []): Promise<T[]> {
-  return getPool().query(text, params).then((r) => r.rows as T[]);
+export async function query<T = any>(text: string, params: unknown[] = []): Promise<T[]> {
+  const p = await getPool();
+  const result = await p.query(text, params);
+  return result.rows as T[];
 }
 
 export interface ProductRow {

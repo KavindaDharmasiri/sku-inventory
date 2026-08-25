@@ -1,9 +1,10 @@
 import { Router, type Request, type Response } from 'express';
 import { query } from '../db';
-import { bcrypt, signToken } from '../middleware/auth';
-import { authLimiter } from '../middleware/rate-limit';
+import { signToken, hashPassword, comparePassword } from '../middleware/auth';
+import { createAuthLimiter } from '../middleware/rate-limit';
 
 export const authRouter = Router();
+const authLimiter = await createAuthLimiter();
 
 authRouter.post('/api/auth/signup', authLimiter, async (req: Request, res: Response) => {
   try {
@@ -21,7 +22,7 @@ authRouter.post('/api/auth/signup', authLimiter, async (req: Request, res: Respo
       res.status(409).json({ success: false, error: 'An account with this email already exists' });
       return;
     }
-    const hash = await bcrypt.hash(password, 10);
+    const hash = await hashPassword(password);
     const rows = await query<any>(
       `INSERT INTO users (email, password, user_type, first_name, last_name, phone)
        VALUES ($1, $2, 'customer', $3, $4, $5)
@@ -29,7 +30,7 @@ authRouter.post('/api/auth/signup', authLimiter, async (req: Request, res: Respo
       [String(email).toLowerCase(), hash, firstName || null, lastName || null, phone || null]
     );
     const user = rows[0];
-    res.status(201).json({ success: true, token: signToken(user), user });
+    res.status(201).json({ success: true, token: await signToken(user), user });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Sign up failed' });
   }
@@ -49,7 +50,7 @@ authRouter.post('/api/auth/signin', authLimiter, async (req: Request, res: Respo
       [String(email).toLowerCase()]
     );
     const dbUser = rows[0];
-    if (!dbUser || !(await bcrypt.compare(password, dbUser.password))) {
+    if (!dbUser || !(await comparePassword(password, dbUser.password))) {
       res.status(401).json({ success: false, error: 'Invalid credentials' });
       return;
     }
@@ -64,7 +65,7 @@ authRouter.post('/api/auth/signin', authLimiter, async (req: Request, res: Respo
       firstName: dbUser.firstName,
       lastName: dbUser.lastName,
     };
-    res.json({ success: true, token: signToken(user), user });
+    res.json({ success: true, token: await signToken(user), user });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Sign in failed' });
   }

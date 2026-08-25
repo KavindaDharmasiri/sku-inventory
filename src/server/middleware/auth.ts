@@ -1,17 +1,26 @@
-import { createRequire } from 'node:module';
-import { type Request } from 'express';
+import type { Request } from 'express';
 
-const require_ = createRequire(import.meta.url);
-export const bcrypt = require_('bcryptjs');
-export const jwt = require_('jsonwebtoken');
+let _bcrypt: any;
+let _jwt: any;
+
+async function bcrypt(): Promise<any> {
+  if (!_bcrypt) _bcrypt = (await import('bcryptjs')).default;
+  return _bcrypt;
+}
+
+async function jwt(): Promise<any> {
+  if (!_jwt) _jwt = (await import('jsonwebtoken')).default;
+  return _jwt;
+}
 
 export function jwtSecret(): string {
   if (!process.env['JWT_SECRET']) throw new Error('JWT_SECRET environment variable is not set');
   return process.env['JWT_SECRET'];
 }
 
-export function signToken(user: { id: number; email: string; userType: string }): string {
-  return jwt.sign(
+export async function signToken(user: { id: number; email: string; userType: string }): Promise<string> {
+  const j = await jwt();
+  return j.sign(
     { userId: user.id, email: user.email, userType: user.userType },
     jwtSecret(),
     { expiresIn: '7d' }
@@ -23,7 +32,9 @@ export function authUser(req: Request): { userId: number; email: string; userTyp
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
   if (!token) return null;
   try {
-    return jwt.verify(token, jwtSecret()) as any;
+    const j = _jwt;
+    if (!j) return null;
+    return j.verify(token, jwtSecret()) as any;
   } catch {
     return null;
   }
@@ -49,4 +60,14 @@ export function requireAdmin(req: Request, res: any): { userId: number; email: s
     return null;
   }
   return user;
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  const b = await bcrypt();
+  return b.hash(password, 10);
+}
+
+export async function comparePassword(password: string, hash: string): Promise<boolean> {
+  const b = await bcrypt();
+  return b.compare(password, hash);
 }
