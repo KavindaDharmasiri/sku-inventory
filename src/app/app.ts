@@ -22,12 +22,14 @@ import { UserSettingsService } from './core/services/user-settings.service';
     @if (!isAdminRoute()) {
       <skuvo-customer-header />
     }
-    <main [class]="isAdminRoute() ? '' : 'pt-16 lg:pt-20'">
-      <router-outlet />
-    </main>
-    @if (!isAdminRoute()) {
-      <skuvo-customer-footer />
-    }
+    <div [class]="isAdminRoute() ? 'min-h-screen flex flex-col' : 'min-h-screen flex flex-col pt-16 lg:pt-20'">
+      <main class="flex-1">
+        <router-outlet />
+      </main>
+      @if (!isAdminRoute()) {
+        <skuvo-customer-footer />
+      }
+    </div>
     <skuvo-floating-settings />
     <skuvo-toast />
     <skuvo-confirm-dialog />

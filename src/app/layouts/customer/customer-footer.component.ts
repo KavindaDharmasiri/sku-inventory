@@ -12,23 +12,23 @@ import { ToastService } from '../../core/services/toast.service';
   template: `
     <footer class="bg-neutral-950 text-neutral-300">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
-          <!-- Brand -->
-          <div class="lg:col-span-1">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
+          <!-- Brand + Newsletter -->
+          <div class="lg:col-span-2">
             <a routerLink="/" class="text-2xl font-display font-bold text-white tracking-tight">
               {{ i18n.t('app.name') }}
             </a>
-            <p class="mt-4 text-sm text-neutral-500 leading-relaxed max-w-xs">
+            <p class="mt-4 text-sm text-neutral-500 leading-relaxed max-w-sm">
               {{ i18n.t('footer.newsletterText') }}
             </p>
-            <div class="mt-6 flex gap-2">
+            <div class="mt-6 flex gap-2 max-w-md">
               <input type="email" [(ngModel)]="newsletterEmail" [placeholder]="i18n.t('common.emailPlaceholder')"
-                     class="flex-1 px-4 py-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-sm
+                     class="flex-1 min-w-0 px-4 py-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-sm
                             text-white placeholder:text-neutral-600 focus:outline-none focus:border-primary
                             transition-colors">
               <button (click)="subscribe()"
-                      class="px-4 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-medium
-                           rounded-lg transition-colors whitespace-nowrap cursor-pointer">
+                      class="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-medium
+                           rounded-lg transition-colors whitespace-nowrap cursor-pointer shrink-0">
                 {{ i18n.t('common.subscribe') }}
               </button>
             </div>
@@ -85,7 +85,7 @@ import { ToastService } from '../../core/services/toast.service';
           <p class="text-xs text-neutral-600">
             © {{ currentYear }} {{ i18n.t('app.name') }}. {{ i18n.t('footer.copyright') }}
           </p>
-          <div class="flex gap-6">
+          <div class="flex gap-6 shrink-0">
             <button (click)="comingSoon('Privacy policy')"
                     class="text-xs text-neutral-600 hover:text-neutral-400 transition-colors cursor-pointer">Privacy</button>
             <button (click)="comingSoon('Terms of service')"
