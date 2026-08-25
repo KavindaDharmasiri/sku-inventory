@@ -26,7 +26,8 @@ import { NgClass } from '@angular/common';
         <!-- Logo -->
         <div class="flex items-center justify-between h-16 px-5 border-b border-neutral-100 dark:border-neutral-800/80 shrink-0">
           <a routerLink="/admin" class="flex items-center gap-2.5 group">
-            <img src="assets/skuvo-icon.svg" alt="" class="h-8 w-8 transition-transform duration-200 group-hover:scale-110">
+            <img src="assets/skuvo-icon.svg" alt="" class="h-8 w-8 dark:hidden transition-transform duration-200 group-hover:scale-110">
+            <img src="assets/skuvo-icon.svg" alt="" class="h-8 w-8 hidden dark:block transition-transform duration-200 group-hover:scale-110">
             <div class="flex items-baseline gap-1.5">
               <span class="text-lg font-display font-bold text-neutral-900 dark:text-white tracking-tight">
                 {{ i18n.t('app.name') }}
