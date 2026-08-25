@@ -15,7 +15,7 @@ const STATUS_OPTIONS = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCEL
   template: `
     <div class="space-y-6">
       <div class="flex items-center gap-4">
-        <a routerLink="/admin/orders" class="text-sm text-neutral-500 hover:text-primary transition-colors">← Orders</a>
+        <a routerLink="/admin/orders" class="text-sm text-neutral-500 dark:text-neutral-400 hover:text-primary transition-colors">← Orders</a>
         <h1 class="text-2xl font-display font-bold text-neutral-900 dark:text-white">
           {{ order()?.orderNumber || 'Order' }}
         </h1>
@@ -32,7 +32,7 @@ const STATUS_OPTIONS = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCEL
           <!-- Summary -->
           <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 p-6 space-y-4">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-medium text-neutral-500 uppercase tracking-wider">Status</span>
+              <span class="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Status</span>
               <select
                 [disabled]="updatingStatus()"
                 class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full border border-neutral-200 dark:border-neutral-700 bg-transparent cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
@@ -45,21 +45,21 @@ const STATUS_OPTIONS = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCEL
               </select>
             </div>
             <div>
-              <p class="text-xs text-neutral-500">Customer</p>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400">Customer</p>
               <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ o.customerName }}</p>
-              <p class="text-xs text-neutral-500">{{ o.email }}</p>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ o.email }}</p>
             </div>
             <div>
-              <p class="text-xs text-neutral-500">Shipping Address</p>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400">Shipping Address</p>
               <p class="text-sm text-neutral-900 dark:text-white">{{ o.address || '—' }}</p>
             </div>
             <div class="flex gap-8">
               <div>
-                <p class="text-xs text-neutral-500">Payment</p>
+                <p class="text-xs text-neutral-500 dark:text-neutral-400">Payment</p>
                 <p class="text-sm capitalize text-neutral-900 dark:text-white">{{ o.paymentMethod || '—' }}</p>
               </div>
               <div>
-                <p class="text-xs text-neutral-500">Placed</p>
+                <p class="text-xs text-neutral-500 dark:text-neutral-400">Placed</p>
                 <p class="text-sm text-neutral-900 dark:text-white">{{ o.createdAt | date:'medium' }}</p>
               </div>
             </div>
@@ -168,10 +168,13 @@ export class AdminOrderDetailComponent implements OnInit {
 
   getStatusClass(status: string): string {
     const map: Record<string, string> = {
-      pending: 'bg-amber-50 text-amber-700', processing: 'bg-sky-50 text-sky-700',
-      shipped: 'bg-blue-50 text-blue-700', delivered: 'bg-emerald-50 text-emerald-700',
-      cancelled: 'bg-red-50 text-red-700', paid: 'bg-emerald-50 text-emerald-700',
+      pending: 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400',
+      processing: 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400',
+      shipped: 'bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400',
+      delivered: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400',
+      cancelled: 'bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-400',
+      paid: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400',
     };
-    return map[status] || 'bg-neutral-50 text-neutral-700';
+    return map[status] || 'bg-neutral-50 text-neutral-700 dark:bg-neutral-500/15 dark:text-neutral-400';
   }
 }

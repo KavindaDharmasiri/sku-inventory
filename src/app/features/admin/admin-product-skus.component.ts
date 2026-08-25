@@ -92,7 +92,7 @@ type SkuRow = {
 
       <div class="flex items-center justify-between pb-4">
         <button type="button" (click)="back()"
-                class="text-sm text-neutral-500 hover:text-neutral-700 transition-colors cursor-pointer">← Back</button>
+                class="text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors cursor-pointer">← Back</button>
         <div class="flex items-center gap-3">
           <button type="button" (click)="finish()"
                   class="px-5 py-2.5 bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white rounded-xl text-sm font-medium transition-colors cursor-pointer">
@@ -112,7 +112,7 @@ type SkuRow = {
         <div class="bg-white dark:bg-neutral-900 w-full max-w-xl rounded-2xl shadow-2xl my-8" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
             <h2 class="text-base font-semibold text-neutral-900 dark:text-white">Edit SKU</h2>
-            <button type="button" (click)="closeModals()" class="text-neutral-400 hover:text-neutral-700 cursor-pointer text-lg leading-none">✕</button>
+            <button type="button" (click)="closeModals()" class="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer text-lg leading-none">✕</button>
           </div>
           <div class="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
             <div>
@@ -167,7 +167,7 @@ type SkuRow = {
             </div>
           </div>
           <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-100 dark:border-neutral-800">
-            <button type="button" (click)="closeModals()" class="px-4 py-2 text-sm text-neutral-400 hover:text-neutral-700 cursor-pointer">CLOSE</button>
+            <button type="button" (click)="closeModals()" class="px-4 py-2 text-sm text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer">CLOSE</button>
             <button type="button" (click)="saveSku()" [disabled]="savingSku()"
                     class="px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer">
               {{ savingSku() ? 'Saving…' : 'UPDATE' }}
@@ -183,7 +183,7 @@ type SkuRow = {
         <div class="bg-white dark:bg-neutral-900 w-full max-w-xl rounded-2xl shadow-2xl my-8" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
             <h2 class="text-base font-semibold text-neutral-900 dark:text-white">View SKU</h2>
-            <button type="button" (click)="closeModals()" class="text-neutral-400 hover:text-neutral-700 cursor-pointer text-lg leading-none">✕</button>
+            <button type="button" (click)="closeModals()" class="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer text-lg leading-none">✕</button>
           </div>
           <div class="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
             <div><label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">SKU CODE</label>
@@ -217,7 +217,7 @@ type SkuRow = {
             }
           </div>
           <div class="flex items-center justify-end px-6 py-4 border-t border-neutral-100 dark:border-neutral-800">
-            <button type="button" (click)="closeModals()" class="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700 cursor-pointer">CLOSE</button>
+            <button type="button" (click)="closeModals()" class="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer">CLOSE</button>
           </div>
         </div>
       </div>

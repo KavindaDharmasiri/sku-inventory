@@ -81,7 +81,7 @@ type SpecRow = { id: number; name: string; description: string; type: 'text' | '
 
       <div class="flex items-center justify-between pb-4">
         <button type="button" (click)="back()"
-                class="text-sm text-neutral-500 hover:text-neutral-700 transition-colors cursor-pointer">← Back</button>
+                class="text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors cursor-pointer">← Back</button>
         <button type="button" (click)="generateAndNext()" [disabled]="generating()"
                 class="px-6 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer">
           {{ generating() ? 'Generating…' : 'Update as Draft & Next' }}
@@ -95,7 +95,7 @@ type SpecRow = { id: number; name: string; description: string; type: 'text' | '
         <div class="bg-white dark:bg-neutral-900 w-full max-w-xl rounded-2xl shadow-2xl my-8" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
             <h2 class="text-base font-semibold text-neutral-900 dark:text-white">{{ editingSpec() ? 'Edit Specification' : 'Product Specification' }}</h2>
-            <button type="button" (click)="closeModal()" class="text-neutral-400 hover:text-neutral-700 cursor-pointer text-lg leading-none">✕</button>
+            <button type="button" (click)="closeModal()" class="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer text-lg leading-none">✕</button>
           </div>
           <div class="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
             <div class="space-y-3">
@@ -145,7 +145,7 @@ type SpecRow = { id: number; name: string; description: string; type: 'text' | '
           </div>
           <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-100 dark:border-neutral-800">
             <button type="button" (click)="closeModal()"
-                    class="px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer">CLOSE</button>
+                    class="px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer">CLOSE</button>
             <button type="button" (click)="saveSpec()" [disabled]="savingSpec()"
                     class="px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer">
               {{ savingSpec() ? 'Saving…' : (editingSpec() ? 'UPDATE' : 'SAVE') }}
@@ -161,7 +161,7 @@ type SpecRow = { id: number; name: string; description: string; type: 'text' | '
         <div class="bg-white dark:bg-neutral-900 w-full max-w-xl rounded-2xl shadow-2xl my-8" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
             <h2 class="text-base font-semibold text-neutral-900 dark:text-white">View Specification</h2>
-            <button type="button" (click)="viewingSpec.set(null)" class="text-neutral-400 hover:text-neutral-700 cursor-pointer text-lg leading-none">✕</button>
+            <button type="button" (click)="viewingSpec.set(null)" class="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer text-lg leading-none">✕</button>
           </div>
           <div class="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
             <div class="space-y-3">
@@ -196,7 +196,7 @@ type SpecRow = { id: number; name: string; description: string; type: 'text' | '
           </div>
           <div class="flex items-center justify-end px-6 py-4 border-t border-neutral-100 dark:border-neutral-800">
             <button type="button" (click)="viewingSpec.set(null)"
-                    class="px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer">CLOSE</button>
+                    class="px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer">CLOSE</button>
           </div>
         </div>
       </div>

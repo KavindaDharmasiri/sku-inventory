@@ -217,7 +217,7 @@ import { ToastService } from '../../core/services/toast.service';
 
         <!-- Actions -->
         <div class="flex items-center justify-end gap-3 pb-4">
-          <a routerLink="/admin/products" class="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 transition-colors">Cancel</a>
+          <a routerLink="/admin/products" class="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">Cancel</a>
           <button type="submit" [disabled]="saving()"
                   class="px-6 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer">
             {{ saving() ? 'Saving…' : (editId() ? 'Update & Next' : 'Save as Draft & Next') }}
