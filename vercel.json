@@ -4,15 +4,15 @@
   "installCommand": "npm install",
   "framework": null,
   "functions": {
-    "dist/skuvo/server/server.mjs": {
-      "includeFiles": "dist/skuvo/browser/**",
+    "api/index.ts": {
+      "includeFiles": "dist/skuvo/**",
       "maxDuration": 30
     }
   },
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "dist/skuvo/server/server.mjs"
+      "dest": "/api"
     }
   ]
 }
