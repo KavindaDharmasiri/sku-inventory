@@ -14,22 +14,23 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
   standalone: true,
   imports: [RouterLink, FormsModule, CurrencyPipe],
   template: `
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 mb-10">
         <div>
-          <h1 class="text-2xl sm:text-3xl font-display font-bold text-neutral-900 dark:text-white">
+          <h1 class="text-3xl sm:text-4xl font-display font-bold text-neutral-900 dark:text-white tracking-tight">
             {{ i18n.t('shop.title') }}
           </h1>
-          <p class="mt-1 text-sm text-neutral-500">{{ totalProducts() }} products</p>
+          <p class="mt-1.5 text-sm text-neutral-400 font-medium">{{ totalProducts() }} products</p>
         </div>
 
         <div class="flex items-center gap-3 w-full sm:w-auto">
           <!-- Mobile filter toggle -->
           <button (click)="filtersOpen.set(!filtersOpen())"
-                  class="lg:hidden inline-flex items-center gap-2 px-3 py-2.5 bg-white dark:bg-neutral-900
+                  class="lg:hidden inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-neutral-900
                          border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium
-                         hover:border-primary transition-colors">
+                         hover:border-amber-400 dark:hover:border-amber-500 transition-all duration-200
+                         shadow-sm hover:shadow-md">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                     d="M12 3c-1.5 0-2.6.9-3 2.2L4.8 16.5c-.4 1.3.6 2.5 1.9 2.5h10.6c1.3 0 2.3-1.2 1.9-2.5L15 5.2C14.6 3.9 13.5 3 12 3zM9 21h6"/>
@@ -39,22 +40,25 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
 
           <!-- Search -->
           <div class="relative flex-1 sm:flex-none">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                     d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
             </svg>
             <input #searchInput type="text" [ngModel]="searchTerm()" (ngModelChange)="onSearchChange($event)"
                    [placeholder]="i18n.t('nav.search')"
-                   class="w-full sm:w-64 pl-10 pr-4 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-200
+                   class="w-full sm:w-72 pl-10 pr-4 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-200
                           dark:border-neutral-700 rounded-xl text-sm focus:outline-none focus:ring-2
-                          focus:ring-primary/20 focus:border-primary transition-all">
+                          focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200
+                          shadow-sm hover:shadow-md">
           </div>
 
           <!-- Sort -->
           <select [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)"
-                  class="px-3 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700
-                         rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
-                         cursor-pointer">
+                  class="px-4 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700
+                         rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400
+                         cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md appearance-none
+                         bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239ca3af%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E')]
+                         bg-[length:12px] bg-[right_12px_center] bg-no-repeat pr-8">
             <option value="newest">{{ i18n.t('shop.sortOptions.newest') }}</option>
             <option value="priceLow">{{ i18n.t('shop.sortOptions.priceLow') }}</option>
             <option value="priceHigh">{{ i18n.t('shop.sortOptions.priceHigh') }}</option>
@@ -63,10 +67,10 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
       </div>
 
       <!-- Filters + Grid -->
-      <div class="flex gap-8">
+      <div class="flex gap-10">
         <!-- Mobile filter backdrop -->
         @if (filtersOpen()) {
-          <div class="fixed inset-0 z-40 bg-neutral-900/40 backdrop-blur-sm lg:hidden"
+          <div class="fixed inset-0 z-40 bg-neutral-900/50 backdrop-blur-sm lg:hidden transition-opacity"
                (click)="filtersOpen.set(false)"></div>
         }
 
@@ -77,10 +81,10 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
                class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] overflow-y-auto
                       bg-white dark:bg-neutral-900 p-6 shadow-2xl
                       transition-transform duration-300 ease-out
-                      lg:static lg:z-auto lg:block lg:w-64 lg:max-w-none lg:shrink-0 lg:p-0
+                      lg:static lg:z-auto lg:block lg:w-60 lg:max-w-none lg:shrink-0 lg:p-0
                       lg:bg-transparent lg:dark:bg-transparent lg:shadow-none lg:overflow-visible
                       lg:translate-x-0">
-          <div class="space-y-6 lg:sticky lg:top-24">
+          <div class="space-y-7 lg:sticky lg:top-24">
             <div class="flex items-center justify-between lg:hidden">
               <h3 class="text-sm font-semibold text-neutral-900 dark:text-white">Filters</h3>
               <button (click)="filtersOpen.set(false)" aria-label="Close filters"
@@ -90,93 +94,132 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
                 </svg>
               </button>
             </div>
+
             <div>
-              <h3 class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+              <h3 class="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.15em] mb-4">
                 {{ i18n.t('shop.filter') }}
               </h3>
-              <div class="space-y-2">
+              <div class="space-y-1">
                 @for (cat of categories(); track cat.id) {
-                  <label class="flex items-center gap-2.5 text-sm text-neutral-600 dark:text-neutral-400
-                               hover:text-neutral-900 dark:hover:text-white cursor-pointer transition-colors">
-                    <input type="checkbox" [checked]="selectedCategory() === cat.id"
-                           (change)="onCategoryToggle(cat.id)"
-                           class="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary">
+                  <label class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-neutral-600 dark:text-neutral-400
+                               hover:bg-neutral-50 dark:hover:bg-neutral-800/50 hover:text-neutral-900
+                               dark:hover:text-white cursor-pointer transition-all duration-200"
+                         [class.bg-amber-50]="selectedCategory() === cat.id"
+                         [class.dark:bg-amber-950/30]="selectedCategory() === cat.id"
+                         [class.text-amber-700]="selectedCategory() === cat.id"
+                         [class.dark:text-amber-400]="selectedCategory() === cat.id">
+                    <div class="relative flex items-center justify-center">
+                      <input type="checkbox" [checked]="selectedCategory() === cat.id"
+                             (change)="onCategoryToggle(cat.id)"
+                             class="peer sr-only">
+                      <div class="w-4 h-4 rounded border-2 border-neutral-300 dark:border-neutral-600
+                                  peer-checked:border-amber-500 peer-checked:bg-amber-500 transition-all duration-200
+                                  flex items-center justify-center">
+                        <svg class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      </div>
+                    </div>
                     {{ cat.name }}
                   </label>
                 }
               </div>
             </div>
 
+            <div class="border-t border-neutral-100 dark:border-neutral-800"></div>
+
             <!-- Price range (client-side) -->
             <div>
-              <h3 class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Price Range</h3>
-              <div class="flex items-center gap-2">
+              <h3 class="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.15em] mb-4">Price Range</h3>
+              <div class="flex items-center gap-2.5">
                 <input type="number" placeholder="Min" [(ngModel)]="priceMin"
                        (ngModelChange)="onClientFilterChange()"
-                       class="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200
-                              dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:border-primary">
-                <span class="text-neutral-400">–</span>
+                       class="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200
+                              dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2
+                              focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200">
+                <span class="text-neutral-300 dark:text-neutral-600">—</span>
                 <input type="number" placeholder="Max" [(ngModel)]="priceMax"
                        (ngModelChange)="onClientFilterChange()"
-                       class="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200
-                              dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:border-primary">
+                       class="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200
+                              dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2
+                              focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200">
               </div>
             </div>
 
+            <div class="border-t border-neutral-100 dark:border-neutral-800"></div>
+
             <!-- Sale toggle (client-side) -->
-            <label class="flex items-center gap-2.5 text-sm text-neutral-600 dark:text-neutral-400
-                         hover:text-neutral-900 dark:hover:text-white cursor-pointer transition-colors">
-              <input type="checkbox" [checked]="onlySale()" (change)="onlySale.set(!onlySale())"
-                     class="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary">
+            <label class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-neutral-600 dark:text-neutral-400
+                         hover:bg-neutral-50 dark:hover:bg-neutral-800/50 hover:text-neutral-900
+                         dark:hover:text-white cursor-pointer transition-all duration-200">
+              <div class="relative flex items-center justify-center">
+                <input type="checkbox" [checked]="onlySale()" (change)="onlySale.set(!onlySale())"
+                       class="peer sr-only">
+                <div class="w-4 h-4 rounded border-2 border-neutral-300 dark:border-neutral-600
+                            peer-checked:border-amber-500 peer-checked:bg-amber-500 transition-all duration-200">
+                </div>
+              </div>
               On Sale Only
             </label>
           </div>
         </aside>
 
         <!-- Product grid -->
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
           @if (loading()) {
-            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               @for (i of [1,2,3,4,5,6,7,8]; track i) {
                 <div class="bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100
-                            dark:border-neutral-800 animate-pulse" [style.animationDelay]="(i * 60) + 'ms'">
-                  <div class="aspect-square bg-neutral-100 dark:bg-neutral-800"></div>
-                  <div class="p-4 space-y-2">
-                    <div class="h-4 bg-neutral-100 dark:bg-neutral-800 rounded w-3/4"></div>
-                    <div class="h-3 bg-neutral-100 dark:bg-neutral-800 rounded w-1/2"></div>
+                            dark:border-neutral-800/60 shadow-sm" [style.animationDelay]="(i * 60) + 'ms'">
+                  <div class="aspect-[4/5] bg-neutral-100 dark:bg-neutral-800 animate-pulse"></div>
+                  <div class="p-5 space-y-3">
+                    <div class="h-3.5 bg-neutral-100 dark:bg-neutral-800 rounded-lg w-3/4 animate-pulse"></div>
+                    <div class="h-3 bg-neutral-100 dark:bg-neutral-800 rounded-lg w-1/2 animate-pulse"></div>
                   </div>
                 </div>
               }
             </div>
           } @else if (displayedProducts().length === 0) {
-            <div class="text-center py-20">
-              <p class="text-neutral-400 text-lg">{{ i18n.t('shop.noProducts') }}</p>
+            <div class="flex flex-col items-center justify-center py-24 text-center">
+              <div class="w-20 h-20 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-6">
+                <svg class="w-10 h-10 text-neutral-300 dark:text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                </svg>
+              </div>
+              <p class="text-neutral-500 dark:text-neutral-400 text-lg font-medium mb-2">{{ i18n.t('shop.noProducts') }}</p>
+              <p class="text-neutral-400 dark:text-neutral-500 text-sm">Try adjusting your filters or search term</p>
             </div>
           } @else {
-            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               @for (product of displayedProducts(); track product.id; let i = $index) {
                 <a [routerLink]="['/product', product.id]"
                    [style.animationDelay]="(i * 50) + 'ms'"
                    class="group bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100
-                          dark:border-neutral-800 hover:shadow-xl hover:shadow-neutral-200/50
-                          dark:hover:shadow-neutral-900/50 transition-all duration-300 hover:-translate-y-1
-                          animate-[fadeUp_0.5s_ease-out_both]">
-                  <div class="relative aspect-square overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                          dark:border-neutral-800/60 hover:shadow-xl hover:shadow-neutral-200/60
+                          dark:hover:shadow-neutral-900/60 transition-all duration-400 hover:-translate-y-1.5
+                          animate-[fadeUp_0.5s_ease-out_both] shadow-sm">
+                  <div class="relative aspect-[4/5] overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                     <img [src]="product.prodImg" [alt]="product.prodName"
-                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                          loading="lazy">
+                    <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/30 to-transparent
+                                opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                     @if (product.isOnSale) {
-                      <span class="absolute top-3 left-3 px-2.5 py-1 bg-error text-white text-[10px] font-bold
-                                   rounded-full uppercase tracking-wider animate-[bounceIn_0.3s_ease-out]">
+                      <span class="absolute top-3 left-3 px-2.5 py-1 bg-red-500 text-white text-[10px] font-bold
+                                   rounded-md uppercase tracking-wider shadow-lg animate-[bounceIn_0.3s_ease-out]">
                         {{ product.discountPercent || 'Sale' }}%
                       </span>
                     }
                     @if (auth.isAuthenticated()) {
                       <button (click)="toggleWishlist(product, $event)"
-                              class="absolute top-3 right-3 w-8 h-8 bg-white/90 dark:bg-neutral-900/90
-                                     backdrop-blur-sm rounded-full flex items-center justify-center
+                              class="absolute top-3 right-3 w-9 h-9 bg-white/95 dark:bg-neutral-900/95
+                                     backdrop-blur-md rounded-full flex items-center justify-center
                                      opacity-0 group-hover:opacity-100 transition-all duration-300
-                                     hover:scale-110 text-neutral-500 hover:text-error cursor-pointer shadow-lg">
+                                     hover:scale-110 hover:bg-red-50 dark:hover:bg-red-950/50
+                                     text-neutral-500 hover:text-red-500 cursor-pointer shadow-lg
+                                     border border-black/5 dark:border-white/5">
                         <svg class="w-4 h-4" [attr.fill]="wishlistedIds().has(product.id) ? 'currentColor' : 'none'"
                              stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                           <path stroke-linecap="round" stroke-linejoin="round"
@@ -185,27 +228,29 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
                       </button>
                     }
                     <button (click)="addToCart(product, $event)"
-                            class="absolute bottom-3 right-3 w-10 h-10 bg-white/90 dark:bg-neutral-900/90
-                                   backdrop-blur-sm rounded-full flex items-center justify-center
+                            class="absolute bottom-3 right-3 w-10 h-10 bg-white/95 dark:bg-neutral-900/95
+                                   backdrop-blur-md rounded-full flex items-center justify-center
                                    opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0
-                                   transition-all duration-300 hover:bg-primary hover:text-white
-                                   text-neutral-700 dark:text-neutral-300 cursor-pointer shadow-lg">
+                                   transition-all duration-300 hover:bg-amber-500 hover:text-white
+                                   text-neutral-700 dark:text-neutral-300 cursor-pointer shadow-lg
+                                   border border-black/5 dark:border-white/5">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                               d="M12 4.5v15m7.5-7.5h-15"/>
                       </svg>
                     </button>
                   </div>
-                  <div class="p-4">
-                    <h3 class="text-sm font-medium text-neutral-900 dark:text-white truncate">
+                  <div class="p-4 pt-3.5">
+                    <h3 class="text-[13px] font-medium text-neutral-900 dark:text-white line-clamp-2
+                               leading-snug min-h-[2.125rem]">
                       {{ product.prodName }}
                     </h3>
-                    <div class="mt-2 flex items-center gap-2">
+                    <div class="mt-2.5 flex items-baseline gap-2">
                       <span class="text-sm font-bold text-neutral-900 dark:text-white">
                         {{ (product.isOnSale ? (product.salePrice ?? product.prodPrice) : product.prodPrice) | currency }}
                       </span>
                       @if (product.isOnSale && product.originalPrice) {
-                        <span class="text-xs text-neutral-400 line-through">
+                        <span class="text-xs text-neutral-400 dark:text-neutral-500 line-through">
                           {{ product.originalPrice | currency }}
                         </span>
                       }
@@ -217,25 +262,27 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
 
             <!-- Pagination -->
             @if (totalPages() > 1) {
-              <div class="flex items-center justify-center gap-2 mt-8">
+              <div class="flex items-center justify-center gap-1.5 mt-12">
                 <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() <= 1"
-                        class="px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
-                               hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed
-                               text-neutral-600 dark:text-neutral-400 transition-colors cursor-pointer">
+                        class="px-4 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
+                               hover:border-amber-400 dark:hover:border-amber-500 disabled:opacity-30 disabled:cursor-not-allowed
+                               text-neutral-500 dark:text-neutral-400 transition-all duration-200 cursor-pointer
+                               hover:shadow-sm">
                   Prev
                 </button>
                 @for (p of visiblePages(); track p) {
                   <button (click)="goToPage(p)"
                           [class]="p === currentPage()
-                            ? 'px-3 py-2 text-sm rounded-lg bg-primary text-white font-medium'
-                            : 'px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-primary text-neutral-600 dark:text-neutral-400 transition-colors cursor-pointer'">
+                            ? 'px-4 py-2 text-sm rounded-lg bg-amber-500 text-white font-semibold shadow-md shadow-amber-500/25'
+                            : 'px-4 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-amber-400 dark:hover:border-amber-500 text-neutral-500 dark:text-neutral-400 transition-all duration-200 cursor-pointer hover:shadow-sm'">
                     {{ p }}
                   </button>
                 }
                 <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() >= totalPages()"
-                        class="px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
-                               hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed
-                               text-neutral-600 dark:text-neutral-400 transition-colors cursor-pointer">
+                        class="px-4 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
+                               hover:border-amber-400 dark:hover:border-amber-500 disabled:opacity-30 disabled:cursor-not-allowed
+                               text-neutral-500 dark:text-neutral-400 transition-all duration-200 cursor-pointer
+                               hover:shadow-sm">
                   Next
                 </button>
               </div>

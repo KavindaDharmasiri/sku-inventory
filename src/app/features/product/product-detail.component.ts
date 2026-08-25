@@ -27,29 +27,35 @@ import type { Product, ProductSku } from '../../core/models/api.model';
         </div>
       </div>
     } @else if (product(); as p) {
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 space-y-8">
+
         <!-- Breadcrumb -->
-        <nav class="flex items-center gap-2 text-xs text-neutral-500 mb-8">
-          <a routerLink="/" class="hover:text-primary transition-colors">{{ i18n.t('nav.home') }}</a>
-          <span>/</span>
-          <a routerLink="/shop" class="hover:text-primary transition-colors">{{ i18n.t('nav.shop') }}</a>
-          <span>/</span>
-          <span class="text-neutral-900 dark:text-white">{{ p.prodName }}</span>
+        <nav class="flex items-center gap-1.5 text-[11px] tracking-wide text-neutral-400">
+          <a routerLink="/" class="hover:text-primary transition-colors duration-200">{{ i18n.t('nav.home') }}</a>
+          <span class="text-neutral-300 dark:text-neutral-600">/</span>
+          <a routerLink="/shop" class="hover:text-primary transition-colors duration-200">{{ i18n.t('nav.shop') }}</a>
+          <span class="text-neutral-300 dark:text-neutral-600">/</span>
+          <span class="text-neutral-500 dark:text-neutral-300 font-medium">{{ p.prodName }}</span>
         </nav>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-          <!-- Images -->
+
+          <!-- ─── Image Gallery ─── -->
           <div class="space-y-4">
-            <div class="aspect-square rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+            <div class="aspect-square rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 shadow-lg shadow-neutral-200/50 dark:shadow-neutral-900/40">
               <img [src]="activeImage() || gallery()[0]" [alt]="p.prodName"
-                   class="w-full h-full object-cover transition-transform duration-300">
+                   class="w-full h-full object-cover transition-all duration-500 ease-out hover:scale-[1.03]">
             </div>
             @if (gallery().length > 1) {
-              <div class="flex gap-2 overflow-x-auto pb-2">
+              <div class="flex gap-3 overflow-x-auto pb-2">
                 @for (img of gallery(); track img) {
                   <button (click)="activeImage.set(img)"
-                          class="w-16 h-16 rounded-lg overflow-hidden border-2 shrink-0 cursor-pointer transition-colors"
+                          class="w-20 h-20 rounded-xl overflow-hidden shrink-0 cursor-pointer transition-all duration-200
+                                 border-2 hover:opacity-100"
                           [class.border-primary]="(activeImage() || gallery()[0]) === img"
+                          [class.ring-2]="(activeImage() || gallery()[0]) === img"
+                          [class.ring-primary/20]="(activeImage() || gallery()[0]) === img"
+                          [class.opacity-60]="(activeImage() || gallery()[0]) !== img"
                           [class.border-transparent]="(activeImage() || gallery()[0]) !== img">
                     <img [src]="img" class="w-full h-full object-cover">
                   </button>
@@ -58,57 +64,66 @@ import type { Product, ProductSku } from '../../core/models/api.model';
             }
           </div>
 
-          <!-- Info -->
-          <div class="lg:py-4">
-            <h1 class="text-2xl sm:text-3xl font-display font-bold text-neutral-900 dark:text-white">
-              {{ p.prodName }}
-            </h1>
+          <!-- ─── Product Info ─── -->
+          <div class="lg:py-2 space-y-8">
 
-            <div class="mt-4 flex items-center gap-3">
-              <span class="text-3xl font-bold text-neutral-900 dark:text-white">
-                {{ displayPrice() | currency }}
-              </span>
-              @if (!selectedSku() && p.isOnSale && p.originalPrice) {
-                <span class="text-lg text-neutral-400 line-through">{{ p.originalPrice | currency }}</span>
-                <span class="px-2 py-0.5 bg-error/10 text-error text-xs font-bold rounded-full">
-                  -{{ p.discountPercent }}%
+            <!-- Title & Price -->
+            <div>
+              <h1 class="text-3xl lg:text-4xl font-display font-bold text-neutral-900 dark:text-white leading-tight tracking-tight">
+                {{ p.prodName }}
+              </h1>
+
+              <div class="mt-4 flex items-center gap-3 flex-wrap">
+                <span class="text-3xl font-bold text-neutral-900 dark:text-white">
+                  {{ displayPrice() | currency }}
                 </span>
+                @if (!selectedSku() && p.isOnSale && p.originalPrice) {
+                  <span class="text-lg text-neutral-400 line-through">{{ p.originalPrice | currency }}</span>
+                  <span class="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full shadow-sm">
+                    -{{ p.discountPercent }}%
+                  </span>
+                }
+              </div>
+
+              @if (p.sku) {
+                <p class="mt-3 text-xs text-neutral-400 font-mono tracking-wider uppercase">
+                  SKU: {{ selectedSku()?.skuCode || p.sku }}
+                </p>
+              }
+
+              <!-- Stock -->
+              <div class="mt-4">
+                @if (displayStock() > 0) {
+                  <span class="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                    {{ i18n.t('product.inStock') }}
+                    @if (selectedSku()) {
+                      <span class="text-neutral-400 font-normal">({{ displayStock() }} left)</span>
+                    }
+                  </span>
+                } @else {
+                  <span class="inline-flex items-center gap-2 text-sm font-medium text-red-500 dark:text-red-400">
+                    <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                    {{ i18n.t('product.outOfStock') }}
+                  </span>
+                }
+              </div>
+
+              <!-- Description -->
+              @if (p.description) {
+                <p class="mt-6 text-neutral-600 dark:text-neutral-400 leading-relaxed text-[15px]">{{ p.description }}</p>
               }
             </div>
 
-            @if (p.sku) {
-              <p class="mt-3 text-xs text-neutral-400 font-mono tracking-wide">
-                SKU: {{ selectedSku()?.skuCode || p.sku }}
-              </p>
-            }
-
-            <div class="mt-4 flex items-center gap-2">
-              @if (displayStock() > 0) {
-                <span class="flex items-center gap-1.5 text-sm text-success">
-                  <span class="w-2 h-2 bg-success rounded-full animate-pulse"></span>
-                  {{ i18n.t('product.inStock') }}
-                  @if (selectedSku()) {
-                    <span class="text-neutral-400">({{ displayStock() }} left)</span>
-                  }
-                </span>
-              } @else {
-                <span class="text-sm text-error">{{ i18n.t('product.outOfStock') }}</span>
-              }
-            </div>
-
-            @if (p.description) {
-              <p class="mt-6 text-neutral-600 dark:text-neutral-400 leading-relaxed">{{ p.description }}</p>
-            }
-
-            <!-- Variant selectors: one row per option group (e.g. Color / Size) -->
+            <!-- ─── Variant Selectors ─── -->
             @if (optionGroups().length) {
-              <div class="mt-8 space-y-5">
+              <div class="space-y-6">
                 @for (g of optionGroups(); track g.key) {
                   <div>
                     <h3 class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
                       {{ g.key }}
                       @if (chosenLabel(g.key); as lbl) {
-                        <span class="ml-1 normal-case font-medium text-neutral-900 dark:text-white">: {{ lbl }}</span>
+                        <span class="ml-1.5 normal-case font-medium text-neutral-900 dark:text-white">: {{ lbl }}</span>
                       }
                     </h3>
                     <div class="flex flex-wrap gap-2.5">
@@ -116,19 +131,19 @@ import type { Product, ProductSku } from '../../core/models/api.model';
                         <button (click)="choose(g, v)"
                                 [disabled]="!optionAvailable(g, v)"
                                 [class]="
-                                  'relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium ' +
+                                  'relative inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl border-2 text-sm font-medium ' +
                                   'transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ' +
                                   (selection()[g.key] === v.raw
-                                    ? 'border-primary ring-2 ring-primary/20 bg-primary/5 text-neutral-900 dark:text-white'
-                                    : 'border-neutral-200 dark:border-neutral-700 hover:border-primary text-neutral-600 dark:text-neutral-300')">
+                                    ? 'border-primary ring-2 ring-primary/20 bg-primary/5 text-neutral-900 dark:text-white shadow-sm'
+                                    : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 text-neutral-600 dark:text-neutral-300')">
                           @if (v.hex) {
-                            <span class="w-4 h-4 rounded-full border border-neutral-300 dark:border-neutral-600"
+                            <span class="w-5 h-5 rounded-full border-2 border-neutral-300 dark:border-neutral-600 shadow-inner"
                                   [style.background]="v.hex"></span>
                           }
                           <span>{{ v.label }}</span>
                           @if (!optionAvailable(g, v)) {
-                            <span class="absolute -top-2 -right-2 px-1.5 py-0.5 bg-neutral-400 text-white
-                                         text-[9px] font-bold uppercase rounded-full">out</span>
+                            <span class="absolute -top-2.5 -right-2.5 px-1.5 py-0.5 bg-neutral-400 dark:bg-neutral-500 text-white
+                                         text-[9px] font-bold uppercase rounded-full leading-none shadow-sm">out</span>
                           }
                         </button>
                       }
@@ -138,30 +153,19 @@ import type { Product, ProductSku } from '../../core/models/api.model';
               </div>
             }
 
-            <div class="mt-8 flex gap-3">
-              <button (click)="addToCart()"
-                      [disabled]="!selectedSku() || displayStock() <= 0"
-                      class="flex-1 py-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900
-                             rounded-xl font-medium text-sm hover:bg-neutral-800 dark:hover:bg-neutral-100
-                             transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
-                             active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                        d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
-                </svg>
-                {{ i18n.t('product.addToCart') }}
-              </button>
+            <!-- ─── Action Buttons ─── -->
+            <div class="flex gap-3">
               @if (auth.isAuthenticated()) {
                 <button (click)="toggleWishlist(p)"
                         [disabled]="wishlistToggling()"
-                        class="shrink-0 w-14 h-14 rounded-xl border border-neutral-200 dark:border-neutral-700
+                        class="shrink-0 w-12 h-12 rounded-xl border-2 border-neutral-200 dark:border-neutral-700
                                flex items-center justify-center transition-all duration-200 cursor-pointer
-                               hover:border-primary hover:bg-primary/5 active:scale-[0.95]
+                               hover:border-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 active:scale-[0.98]
                                disabled:opacity-50 disabled:cursor-not-allowed">
                   @if (wishlistToggling()) {
                     <span class="text-xs text-neutral-400">...</span>
                   } @else if (isWishlisted()) {
-                    <svg class="w-5 h-5 text-error" fill="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/>
                     </svg>
                   } @else {
@@ -172,95 +176,112 @@ import type { Product, ProductSku } from '../../core/models/api.model';
                   }
                 </button>
               }
+              <button (click)="addToCart()"
+                      [disabled]="!selectedSku() || displayStock() <= 0"
+                      class="flex-1 py-4 px-6 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900
+                             rounded-xl font-semibold text-sm hover:bg-neutral-800 dark:hover:bg-neutral-100
+                             shadow-lg shadow-neutral-900/10 dark:shadow-white/10
+                             transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
+                             active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2.5">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+                </svg>
+                {{ i18n.t('product.addToCart') }}
+              </button>
             </div>
+          </div>
+        </div>
 
-            <!-- Specs -->
-            @if (p.specs && p.specs.length) {
-              <div class="mt-10">
-                <h3 class="text-sm font-semibold text-neutral-900 dark:text-white uppercase tracking-wider mb-4">
-                  {{ i18n.t('product.specifications') }}
-                </h3>
-                <div class="border border-neutral-100 dark:border-neutral-800 rounded-xl overflow-hidden">
-                  @for (spec of p.specs; track spec.id) {
-                    <div class="flex border-b border-neutral-100 dark:border-neutral-800 last:border-0">
-                      <span class="w-1/3 px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 text-xs font-medium text-neutral-500">
-                        {{ spec.name }}
-                      </span>
-                      <div class="w-2/3 px-4 py-3 flex flex-wrap gap-x-5 gap-y-2 items-center">
-                        @for (a of spec.attributes || []; track a.name) {
-                          <span class="inline-flex items-center gap-2 text-sm text-neutral-900 dark:text-white">
-                            @if (isHex(a.value)) {
-                              <span class="w-4 h-4 rounded-full border border-neutral-300 dark:border-neutral-600"
-                                    [style.background]="a.value.trim()"></span>
-                            }
-                            {{ a.name }}
-                          </span>
+        <!-- ─── Specifications ─── -->
+        @if (p.specs && p.specs.length) {
+          <div>
+            <h3 class="text-xs font-semibold text-neutral-900 dark:text-white uppercase tracking-wider mb-4">
+              {{ i18n.t('product.specifications') }}
+            </h3>
+            <div class="rounded-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden divide-y divide-neutral-100 dark:divide-neutral-800">
+              @for (spec of p.specs; track spec.id) {
+                <div class="flex">
+                  <span class="w-1/3 px-5 py-3.5 bg-neutral-50 dark:bg-neutral-800/50 text-xs font-medium text-neutral-500">
+                    {{ spec.name }}
+                  </span>
+                  <div class="w-2/3 px-5 py-3.5 flex flex-wrap gap-x-5 gap-y-2 items-center">
+                    @for (a of spec.attributes || []; track a.name) {
+                      <span class="inline-flex items-center gap-2 text-sm text-neutral-900 dark:text-white">
+                        @if (isHex(a.value)) {
+                          <span class="w-4 h-4 rounded-full border border-neutral-300 dark:border-neutral-600"
+                                [style.background]="a.value.trim()"></span>
                         }
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-
-            <!-- Reviews -->
-            <div class="mt-10">
-              <h3 class="text-sm font-semibold text-neutral-900 dark:text-white uppercase tracking-wider mb-4">
-                {{ i18n.t('product.reviews') }}
-              </h3>
-
-              @if (auth.isAuthenticated()) {
-                <div class="border border-neutral-100 dark:border-neutral-800 rounded-xl p-5 mb-6">
-                  <h4 class="text-sm font-medium text-neutral-900 dark:text-white mb-3">Write a Review</h4>
-                  <div class="flex items-center gap-1 mb-3">
-                    @for (star of [1, 2, 3, 4, 5]; track star) {
-                      <button (click)="reviewRating.set(star)" type="button" class="cursor-pointer">
-                        <svg class="w-6 h-6 transition-colors" [class.text-yellow-400]="star <= reviewRating()" [class.text-neutral-300]="star > reviewRating()" [attr.fill]="star <= reviewRating() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
-                        </svg>
-                      </button>
+                        {{ a.name }}
+                      </span>
                     }
                   </div>
-                  <textarea [(ngModel)]="reviewComment"
-                            rows="3"
-                            placeholder="Share your thoughts..."
-                            class="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"></textarea>
-                  <button (click)="submitReview(p)"
-                          [disabled]="!reviewRating() || !reviewComment().trim() || submittingReview()"
-                          class="mt-3 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl text-sm font-medium
-                                 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
-                                 cursor-pointer active:scale-[0.98]">
-                    {{ submittingReview() ? 'Submitting...' : 'Submit Review' }}
-                  </button>
                 </div>
-              }
-
-              @if (p.reviews && p.reviews.length) {
-                <div class="space-y-4">
-                  @for (review of p.reviews; track review.id) {
-                    <div class="border border-neutral-100 dark:border-neutral-800 rounded-xl p-5">
-                      <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-2">
-                          <span class="text-sm font-medium text-neutral-900 dark:text-white">{{ review.userName }}</span>
-                          <div class="flex items-center gap-0.5">
-                            @for (star of [1, 2, 3, 4, 5]; track star) {
-                              <svg class="w-4 h-4" [class.text-yellow-400]="star <= review.rating" [class.text-neutral-300]="star > review.rating" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
-                              </svg>
-                            }
-                          </div>
-                        </div>
-                        <span class="text-xs text-neutral-400">{{ review.createdAt | date:'mediumDate' }}</span>
-                      </div>
-                      <p class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">{{ review.comment }}</p>
-                    </div>
-                  }
-                </div>
-              } @else {
-                <p class="text-sm text-neutral-400">No reviews yet</p>
               }
             </div>
           </div>
+        }
+
+        <!-- ─── Reviews ─── -->
+        <div>
+          <h3 class="text-xs font-semibold text-neutral-900 dark:text-white uppercase tracking-wider mb-5">
+            {{ i18n.t('product.reviews') }}
+            @if (p.reviews && p.reviews.length) {
+              <span class="text-neutral-400 dark:text-neutral-500 normal-case ml-1">({{ p.reviews.length }})</span>
+            }
+          </h3>
+
+          <!-- Write a Review -->
+          @if (auth.isAuthenticated()) {
+            <div class="rounded-xl border border-neutral-100 dark:border-neutral-800 p-6 mb-6">
+              <h4 class="text-sm font-semibold text-neutral-900 dark:text-white mb-4">Write a Review</h4>
+              <div class="flex items-center gap-1.5 mb-4">
+                @for (star of [1, 2, 3, 4, 5]; track star) {
+                  <button (click)="reviewRating.set(star)" type="button" class="cursor-pointer p-0.5 transition-transform hover:scale-110">
+                    <svg class="w-6 h-6 transition-colors" [class.text-amber-400]="star <= reviewRating()" [class.text-neutral-200]="star > reviewRating()" [attr.fill]="star <= reviewRating() ? 'currentColor' : 'none'" [attr.stroke]="star <= reviewRating() ? 'none' : 'currentColor'" stroke-width="1.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+              <textarea [(ngModel)]="reviewComment"
+                        rows="3"
+                        placeholder="Share your thoughts..."
+                        class="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none transition-all"></textarea>
+              <button (click)="submitReview(p)"
+                      [disabled]="!reviewRating() || !reviewComment().trim() || submittingReview()"
+                      class="mt-3 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold
+                             hover:opacity-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
+                             cursor-pointer active:scale-[0.98]">
+                {{ submittingReview() ? 'Submitting...' : 'Submit Review' }}
+              </button>
+            </div>
+          }
+
+          @if (p.reviews && p.reviews.length) {
+            <div class="space-y-4">
+              @for (review of p.reviews; track review.id) {
+                <div class="rounded-xl border border-neutral-100 dark:border-neutral-800 p-5">
+                  <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                      <span class="text-sm font-semibold text-neutral-900 dark:text-white">{{ review.userName }}</span>
+                      <div class="flex items-center gap-0.5">
+                        @for (star of [1, 2, 3, 4, 5]; track star) {
+                          <svg class="w-4 h-4" [class.text-amber-400]="star <= review.rating" [class.text-neutral-200]="star > review.rating" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+                          </svg>
+                        }
+                      </div>
+                    </div>
+                    <span class="text-xs text-neutral-400">{{ review.createdAt | date:'mediumDate' }}</span>
+                  </div>
+                  <p class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">{{ review.comment }}</p>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-sm text-neutral-400">No reviews yet</p>
+          }
         </div>
       </div>
     } @else {

@@ -16,10 +16,23 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
         {{ i18n.t('admin.orders') }}
       </h1>
       @if (loading()) {
-        <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden p-6">
-          <div class="space-y-3 animate-pulse">
-            @for (i of [1,2,3]; track i) {
-              <div class="h-12 bg-neutral-100 dark:bg-neutral-800 rounded-lg"></div>
+        <div class="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden">
+          <!-- Skeleton filter bar -->
+          <div class="px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-3">
+            <div class="h-9 w-32 bg-neutral-100 dark:bg-neutral-800 rounded-lg animate-pulse"></div>
+            <div class="h-9 w-64 bg-neutral-100 dark:bg-neutral-800 rounded-lg animate-pulse"></div>
+            <div class="ml-auto h-4 w-20 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse"></div>
+          </div>
+          <!-- Skeleton table rows -->
+          <div class="p-6 space-y-3">
+            @for (i of [1,2,3,4,5]; track i) {
+              <div class="flex items-center gap-4">
+                <div class="h-4 w-16 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse"></div>
+                <div class="h-4 w-32 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse"></div>
+                <div class="h-4 w-20 bg-neutral-100 dark:bg-neutral-800 rounded animate-pulse"></div>
+                <div class="h-6 w-20 bg-neutral-100 dark:bg-neutral-800 rounded-full animate-pulse"></div>
+                <div class="ml-auto h-8 w-16 bg-neutral-100 dark:bg-neutral-800 rounded-lg animate-pulse"></div>
+              </div>
             }
           </div>
         </div>

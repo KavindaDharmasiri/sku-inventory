@@ -11,42 +11,131 @@ import { NgClass } from '@angular/common';
   template: `
     <!-- Mobile overlay -->
     @if (sidebarOpen()) {
-      <div class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
            (click)="sidebarOpen.set(false)"></div>
     }
 
     <!-- Sidebar -->
     <aside
       class="fixed top-0 left-0 bottom-0 z-50 w-72 bg-white dark:bg-neutral-950 border-r border-neutral-100
-             dark:border-neutral-800 transform transition-transform duration-300 ease-out
-             lg:translate-x-0"
+             dark:border-neutral-800/80 transform transition-transform duration-300 ease-out
+             lg:translate-x-0 flex flex-col shadow-2xl lg:shadow-none"
       [ngClass]="sidebarOpen() ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
     >
       <div class="flex flex-col h-full">
         <!-- Logo -->
-        <div class="flex items-center justify-between h-16 px-6 border-b border-neutral-100 dark:border-neutral-800">
-          <a routerLink="/admin" class="text-xl font-display font-bold text-neutral-900 dark:text-white">
-            {{ i18n.t('app.name') }}
-            <span class="text-xs font-normal text-neutral-500 ml-2">Admin</span>
+        <div class="flex items-center justify-between h-16 px-5 border-b border-neutral-100 dark:border-neutral-800/80 shrink-0">
+          <a routerLink="/admin" class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-sm">
+              <span class="text-white text-sm font-bold">{{ i18n.t('app.name')[0] || 'S' }}</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-lg font-display font-bold text-neutral-900 dark:text-white tracking-tight">
+                {{ i18n.t('app.name') }}
+              </span>
+              <span class="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-widest">Admin</span>
+            </div>
           </a>
-          <button class="lg:hidden p-1 text-neutral-500 hover:text-neutral-700 cursor-pointer"
+          <button class="lg:hidden p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100
+                         dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                   (click)="sidebarOpen.set(false)" type="button">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         </div>
 
         <!-- Nav items -->
-        <nav class="flex-1 overflow-y-auto p-4 space-y-1">
-          @for (item of navItems; track item.path) {
+        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+          <p class="px-3 pt-1 pb-2 text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Main</p>
+          @for (item of navItems.slice(0, 2); track item.path) {
             <a [routerLink]="item.path"
-               routerLinkActive="bg-primary/5 text-primary border-l-2 border-primary"
+               routerLinkActive="bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-l-[3px] border-amber-500 shadow-sm shadow-amber-500/5"
                [routerLinkActiveOptions]="{exact: item.exact}"
                class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg
                       text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-900
                       hover:text-neutral-900 dark:hover:text-white transition-all duration-200
-                      border-l-2 border-transparent">
+                      border-l-[3px] border-transparent">
+              <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" [attr.d]="item.icon" />
+              </svg>
+              <span>{{ item.label }}</span>
+            </a>
+          }
+
+          <p class="px-3 pt-5 pb-2 text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Catalog</p>
+          @for (item of navItems.slice(2, 5); track item.path) {
+            <a [routerLink]="item.path"
+               routerLinkActive="bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-l-[3px] border-amber-500 shadow-sm shadow-amber-500/5"
+               [routerLinkActiveOptions]="{exact: item.exact}"
+               class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg
+                      text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-900
+                      hover:text-neutral-900 dark:hover:text-white transition-all duration-200
+                      border-l-[3px] border-transparent">
+              <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" [attr.d]="item.icon" />
+              </svg>
+              <span>{{ item.label }}</span>
+            </a>
+          }
+
+          <p class="px-3 pt-5 pb-2 text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">People</p>
+          @for (item of navItems.slice(5, 6); track item.path) {
+            <a [routerLink]="item.path"
+               routerLinkActive="bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-l-[3px] border-amber-500 shadow-sm shadow-amber-500/5"
+               [routerLinkActiveOptions]="{exact: item.exact}"
+               class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg
+                      text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-900
+                      hover:text-neutral-900 dark:hover:text-white transition-all duration-200
+                      border-l-[3px] border-transparent">
+              <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" [attr.d]="item.icon" />
+              </svg>
+              <span>{{ item.label }}</span>
+            </a>
+          }
+
+          <p class="px-3 pt-5 pb-2 text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Finance</p>
+          @for (item of navItems.slice(6, 9); track item.path) {
+            <a [routerLink]="item.path"
+               routerLinkActive="bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-l-[3px] border-amber-500 shadow-sm shadow-amber-500/5"
+               [routerLinkActiveOptions]="{exact: item.exact}"
+               class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg
+                      text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-900
+                      hover:text-neutral-900 dark:hover:text-white transition-all duration-200
+                      border-l-[3px] border-transparent">
+              <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" [attr.d]="item.icon" />
+              </svg>
+              <span>{{ item.label }}</span>
+            </a>
+          }
+
+          <p class="px-3 pt-5 pb-2 text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Marketing</p>
+          @for (item of navItems.slice(9, 11); track item.path) {
+            <a [routerLink]="item.path"
+               routerLinkActive="bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-l-[3px] border-amber-500 shadow-sm shadow-amber-500/5"
+               [routerLinkActiveOptions]="{exact: item.exact}"
+               class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg
+                      text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-900
+                      hover:text-neutral-900 dark:hover:text-white transition-all duration-200
+                      border-l-[3px] border-transparent">
+              <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" [attr.d]="item.icon" />
+              </svg>
+              <span>{{ item.label }}</span>
+            </a>
+          }
+
+          <p class="px-3 pt-5 pb-2 text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">System</p>
+          @for (item of navItems.slice(11); track item.path) {
+            <a [routerLink]="item.path"
+               routerLinkActive="bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-l-[3px] border-amber-500 shadow-sm shadow-amber-500/5"
+               [routerLinkActiveOptions]="{exact: item.exact}"
+               class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg
+                      text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-900
+                      hover:text-neutral-900 dark:hover:text-white transition-all duration-200
+                      border-l-[3px] border-transparent">
               <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" [attr.d]="item.icon" />
               </svg>
@@ -56,21 +145,25 @@ import { NgClass } from '@angular/common';
         </nav>
 
         <!-- Footer -->
-        <div class="p-4 border-t border-neutral-100 dark:border-neutral-800">
-          <div class="flex items-center gap-3 px-3 py-2">
-            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold">
+        <div class="p-3 border-t border-neutral-100 dark:border-neutral-800/80 shrink-0">
+          <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/80">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-xs font-bold shadow-sm">
               {{ getInitials() }}
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-neutral-900 dark:text-white truncate">
+              <p class="text-sm font-semibold text-neutral-900 dark:text-white truncate">
                 {{ auth.user()?.firstName || auth.user()?.email }}
               </p>
-              <p class="text-xs text-neutral-500 truncate">{{ auth.user()?.email }}</p>
+              <p class="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">{{ auth.user()?.email }}</p>
             </div>
           </div>
           <a routerLink="/" class="mt-2 flex items-center gap-2 px-3 py-2 text-sm text-neutral-500
-                                   hover:text-neutral-700 dark:hover:text-neutral-300 rounded-lg transition-colors">
-            <span>←</span> View Store
+                                   hover:text-amber-600 dark:hover:text-amber-400 hover:bg-neutral-50 dark:hover:bg-neutral-900
+                                   rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"/>
+            </svg>
+            View Store
           </a>
         </div>
       </div>
