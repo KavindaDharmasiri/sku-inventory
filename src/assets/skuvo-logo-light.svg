@@ -1,0 +1,10 @@
+<svg width="440" height="130" viewBox="0 0 440 130" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .word { font-family:'Fraunces', Georgia, 'Times New Roman', serif; }
+    </style>
+  </defs>
+  <text x="6" y="86" class="word" font-size="72" font-weight="500" fill="#211c17"><tspan font-style="italic" fill="#c8763a">s</tspan>kuvo</text>
+  <!-- underline mark: small blob dash tying to the hero blob motif -->
+  <ellipse cx="210" cy="108" rx="30" ry="4" fill="#c8763a" opacity="0.55"/>
+</svg>

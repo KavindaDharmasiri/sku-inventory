@@ -16,11 +16,11 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
           <table class="w-full min-w-[640px] text-sm">
             <thead>
               <tr class="border-b border-neutral-100 dark:border-neutral-800">
-                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Order</th>
-                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Customer</th>
-                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Method</th>
-                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Date</th>
-                <th class="whitespace-nowrap px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">Amount</th>
+                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Order</th>
+                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Customer</th>
+                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Method</th>
+                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Date</th>
+                <th class="whitespace-nowrap px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Amount</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-neutral-50 dark:divide-neutral-800">
@@ -37,7 +37,7 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
                   <td class="px-6 py-4 text-right font-medium text-neutral-900 dark:text-white">{{ t.total | currency }}</td>
                 </tr>
               } @empty {
-                <tr><td colspan="5" class="px-6 py-12 text-center text-neutral-400">No transactions</td></tr>
+                <tr><td colspan="5" class="px-6 py-12 text-center text-neutral-400 dark:text-neutral-500">No transactions</td></tr>
               }
             </tbody>
           </table>

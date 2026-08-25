@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { I18nService } from '../../core/services/i18n.service';
 import { ApiService } from '../../core/services/api.service';
+import { ConfigService } from '../../core/services/config.service';
 import { ToastService } from '../../core/services/toast.service';
 import type { Product, AdBanner } from '../../core/models/api.model';
 import { CurrencyPipe } from '../../shared/pipes/pipes';
@@ -13,10 +14,11 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
   template: `
     <!-- Hero Section -->
     <section class="relative min-h-screen flex items-center justify-center overflow-hidden bg-neutral-950 dark:bg-black">
+      <!-- Banner images -->
+      <img src="assets/banner-light.png" alt="" class="absolute inset-0 w-full h-full object-cover dark:hidden" loading="eager">
+      <img src="assets/banner-dark.png" alt="" class="absolute inset-0 w-full h-full object-cover hidden dark:block" loading="eager">
       <div class="absolute inset-0 bg-gradient-to-br from-neutral-900/80 via-neutral-950/60 to-primary/20"></div>
-      <div class="absolute inset-0 opacity-[0.04]"
-           style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0); background-size: 40px 40px;"></div>
-      <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
       <div class="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-32 text-center">
         <div class="animate-[fadeUp_0.8s_ease-out]">
@@ -200,6 +202,7 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
 export class LandingComponent implements OnInit {
   i18n = inject(I18nService);
   api = inject(ApiService);
+  config = inject(ConfigService);
   private toast = inject(ToastService);
 
   featuredProducts = signal<Product[]>([]);

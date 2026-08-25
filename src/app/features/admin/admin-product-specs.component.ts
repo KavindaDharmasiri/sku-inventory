@@ -45,22 +45,22 @@ type SpecRow = { id: number; name: string; description: string; type: 'text' | '
         <table class="w-full min-w-[560px] text-sm">
           <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-neutral-800">
-              <th class="px-4 py-3 whitespace-nowrap">Order No.</th>
-              <th class="px-4 py-3 whitespace-nowrap">Specifications Name</th>
-              <th class="px-4 py-3 whitespace-nowrap">Specifications Description</th>
-              <th class="px-4 py-3 whitespace-nowrap">Actions</th>
+               <th class="px-4 py-3 whitespace-nowrap text-neutral-400 dark:text-neutral-500">Order No.</th>
+               <th class="px-4 py-3 whitespace-nowrap text-neutral-400 dark:text-neutral-500">Specifications Name</th>
+               <th class="px-4 py-3 whitespace-nowrap text-neutral-400 dark:text-neutral-500">Specifications Description</th>
+               <th class="px-4 py-3 whitespace-nowrap text-neutral-400 dark:text-neutral-500">Actions</th>
             </tr>
           </thead>
           <tbody>
             @for (spec of specs(); track spec.id; let i = $index) {
               <tr class="border-b border-neutral-50 dark:border-neutral-800/60 last:border-0 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 transition-colors">
-                <td class="px-4 py-3 text-neutral-500">{{ i + 1 }}</td>
+                <td class="px-4 py-3 text-neutral-500 dark:text-neutral-400">{{ i + 1 }}</td>
                 <td class="px-4 py-3 font-medium text-neutral-900 dark:text-white whitespace-nowrap">{{ spec.name }}</td>
-                <td class="px-4 py-3 text-neutral-500">{{ spec.description || '-' }}</td>
+                <td class="px-4 py-3 text-neutral-500 dark:text-neutral-400">{{ spec.description || '-' }}</td>
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-2 whitespace-nowrap">
                     <button type="button" (click)="openViewModal(spec)" title="View"
-                            class="px-2 py-1 rounded-lg text-xs text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">View</button>
+                            class="px-2 py-1 rounded-lg text-xs text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">View</button>
                     <button type="button" (click)="openEditModal(spec)" title="Edit"
                             class="px-2 py-1 rounded-lg text-xs text-primary hover:bg-primary/10 cursor-pointer">Edit</button>
                     <button type="button" (click)="deleteSpec(spec)" title="Delete"
@@ -70,7 +70,7 @@ type SpecRow = { id: number; name: string; description: string; type: 'text' | '
               </tr>
             } @empty {
               <tr>
-                <td colspan="4" class="px-4 py-10 text-center text-sm text-neutral-400">No specifications added</td>
+                <td colspan="4" class="px-4 py-10 text-center text-sm text-neutral-400 dark:text-neutral-500">No specifications added</td>
               </tr>
             }
           </tbody>
@@ -99,14 +99,14 @@ type SpecRow = { id: number; name: string; description: string; type: 'text' | '
           </div>
           <div class="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
             <div class="space-y-3">
-              <h3 class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Specification</h3>
+              <h3 class="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Specification</h3>
               <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1.5">Name *</label>
+                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Name *</label>
                 <input type="text" [(ngModel)]="draft.name" name="specName" placeholder="e.g. Color"
                        class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
               </div>
               <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1.5">Description</label>
+                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Description</label>
                 <textarea [(ngModel)]="draft.description" name="specDesc" rows="3"
                           class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
               </div>
@@ -114,12 +114,12 @@ type SpecRow = { id: number; name: string; description: string; type: 'text' | '
 
             <div class="space-y-3">
               <div class="flex items-center justify-between">
-                <h3 class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Attributes</h3>
+                <h3 class="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Attributes</h3>
                 <button type="button" (click)="addAttrRow()"
                         class="px-3 py-1.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg text-xs font-medium hover:bg-neutral-700 transition-colors cursor-pointer">+ Add</button>
               </div>
               <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1.5">Attribute Type</label>
+                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Attribute Type</label>
                 <select [(ngModel)]="draft.type" name="attrType"
                         class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white cursor-pointer">
                   <option value="text">Text</option>
@@ -145,7 +145,7 @@ type SpecRow = { id: number; name: string; description: string; type: 'text' | '
           </div>
           <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-100 dark:border-neutral-800">
             <button type="button" (click)="closeModal()"
-                    class="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700 cursor-pointer">CLOSE</button>
+                    class="px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer">CLOSE</button>
             <button type="button" (click)="saveSpec()" [disabled]="savingSpec()"
                     class="px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer">
               {{ savingSpec() ? 'Saving…' : (editingSpec() ? 'UPDATE' : 'SAVE') }}
@@ -165,20 +165,20 @@ type SpecRow = { id: number; name: string; description: string; type: 'text' | '
           </div>
           <div class="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
             <div class="space-y-3">
-              <h3 class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Specification</h3>
+              <h3 class="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Specification</h3>
               <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1.5">Name</label>
+                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Name</label>
                 <input type="text" [value]="spec.name" readonly class="w-full px-3.5 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-500 cursor-not-allowed">
               </div>
               <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1.5">Description</label>
+                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Description</label>
                 <textarea [value]="spec.description" rows="3" readonly class="w-full px-3.5 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-500 cursor-not-allowed"></textarea>
               </div>
             </div>
             <div class="space-y-3">
-              <h3 class="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Attributes</h3>
+              <h3 class="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Attributes</h3>
               <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1.5">Attribute Type</label>
+                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Attribute Type</label>
                 <input type="text" [value]="spec.type.toUpperCase()" readonly class="w-full px-3.5 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-500 cursor-not-allowed">
               </div>
               @for (attr of spec.attributes; track $index; let ai = $index) {
@@ -196,7 +196,7 @@ type SpecRow = { id: number; name: string; description: string; type: 'text' | '
           </div>
           <div class="flex items-center justify-end px-6 py-4 border-t border-neutral-100 dark:border-neutral-800">
             <button type="button" (click)="viewingSpec.set(null)"
-                    class="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700 cursor-pointer">CLOSE</button>
+                    class="px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer">CLOSE</button>
           </div>
         </div>
       </div>

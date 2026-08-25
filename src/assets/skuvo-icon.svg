@@ -1,0 +1,24 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="blobGrad" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#d98a4f"/>
+      <stop offset="60%" stop-color="#c8763a"/>
+      <stop offset="100%" stop-color="#a8602c"/>
+    </radialGradient>
+    <style>
+      .letter { font-family:'Fraunces', Georgia, 'Times New Roman', serif; }
+    </style>
+  </defs>
+
+  <!-- organic blob, same silhouette family as the hero visual -->
+  <path d="M100 14
+           C 138 10, 172 34, 184 70
+           C 196 106, 182 148, 148 172
+           C 114 196, 66 192, 36 164
+           C 6 136, 4 90, 26 56
+           C 42 30, 68 18, 100 14 Z"
+        fill="url(#blobGrad)"/>
+
+  <text x="100" y="128" class="letter" font-size="96" font-weight="500" font-style="italic"
+        fill="#fffdf8" text-anchor="middle">S</text>
+</svg>

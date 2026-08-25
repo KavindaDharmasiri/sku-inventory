@@ -40,13 +40,13 @@ import { FormsModule } from '@angular/forms';
           <h3 class="text-sm font-semibold text-neutral-900 dark:text-white">
             {{ i18n.t('settings.title') }}
           </h3>
-          <button (click)="panelOpen.set(false)" class="text-neutral-400 hover:text-neutral-600 cursor-pointer">×</button>
+          <button (click)="panelOpen.set(false)" class="text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 cursor-pointer">×</button>
         </div>
 
         <div class="p-5 space-y-6">
           <!-- Theme -->
           <div>
-            <label class="text-xs font-medium text-neutral-500 uppercase tracking-wider">
+            <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
               {{ i18n.t('settings.theme') }}
             </label>
             <div class="mt-2 grid grid-cols-3 gap-2">
@@ -68,7 +68,7 @@ import { FormsModule } from '@angular/forms';
 
           <!-- Language -->
           <div>
-            <label class="text-xs font-medium text-neutral-500 uppercase tracking-wider">
+            <label class="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
               {{ i18n.t('settings.language') }}
             </label>
             <div class="mt-2 space-y-1.5">

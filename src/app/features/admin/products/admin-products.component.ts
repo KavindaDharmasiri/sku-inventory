@@ -28,11 +28,11 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
           <table class="w-full min-w-[640px] text-sm">
             <thead>
               <tr class="border-b border-neutral-100 dark:border-neutral-800">
-                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Product</th>
-                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Price</th>
-                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Stock</th>
-                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
-                <th class="whitespace-nowrap px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">Actions</th>
+                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Product</th>
+                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Price</th>
+                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Stock</th>
+                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Status</th>
+                <th class="whitespace-nowrap px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-neutral-50 dark:divide-neutral-800">
@@ -61,7 +61,7 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
                   </td>
                   <td class="px-6 py-4 text-right whitespace-nowrap">
                     <a [routerLink]="['/product', p.id]"
-                       class="text-xs text-neutral-500 hover:text-primary font-medium mr-3">View</a>
+                       class="text-xs text-neutral-500 dark:text-neutral-400 hover:text-primary font-medium mr-3">View</a>
                     <a [routerLink]="['/admin/products', p.id, 'edit']"
                        class="text-xs text-primary hover:text-primary-dark font-medium mr-3">Edit</a>
                     <button (click)="deleteProduct(p)" [disabled]="deleting() === p.id"
@@ -72,7 +72,7 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="5" class="px-6 py-12 text-center text-neutral-400">No products yet</td>
+                  <td colspan="5" class="px-6 py-12 text-center text-neutral-400 dark:text-neutral-500">No products yet</td>
                 </tr>
               }
             </tbody>

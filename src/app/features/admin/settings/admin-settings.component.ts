@@ -11,12 +11,12 @@ import { Component } from '@angular/core';
         <div class="divide-y divide-neutral-50 dark:divide-neutral-800">
           @for (row of settings; track row.label) {
             <div class="flex items-center justify-between py-3 text-sm">
-              <span class="text-neutral-500">{{ row.label }}</span>
+              <span class="text-neutral-500 dark:text-neutral-400">{{ row.label }}</span>
               <span class="font-medium text-neutral-900 dark:text-white">{{ row.value }}</span>
             </div>
           }
         </div>
-        <p class="text-xs text-neutral-400 pt-2">
+        <p class="text-xs text-neutral-400 dark:text-neutral-500 pt-2">
           Store-wide settings are managed via the database and environment configuration.
         </p>
       </div>

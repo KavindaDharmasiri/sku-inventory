@@ -54,21 +54,21 @@ type SkuRow = {
         <table class="w-full min-w-[720px] text-sm">
           <thead>
             <tr class="text-left text-[11px] uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-neutral-800">
-              <th class="px-4 py-3 whitespace-nowrap">Id</th>
-              <th class="px-4 py-3 whitespace-nowrap">SKU Code</th>
-              <th class="px-4 py-3 whitespace-nowrap">Variant Keys</th>
-              <th class="px-4 py-3 whitespace-nowrap">Variant Details</th>
-              <th class="px-4 py-3 whitespace-nowrap">Price</th>
-              <th class="px-4 py-3 whitespace-nowrap">Action</th>
+               <th class="px-4 py-3 whitespace-nowrap text-neutral-400 dark:text-neutral-500">Id</th>
+               <th class="px-4 py-3 whitespace-nowrap text-neutral-400 dark:text-neutral-500">SKU Code</th>
+               <th class="px-4 py-3 whitespace-nowrap text-neutral-400 dark:text-neutral-500">Variant Keys</th>
+               <th class="px-4 py-3 whitespace-nowrap text-neutral-400 dark:text-neutral-500">Variant Details</th>
+               <th class="px-4 py-3 whitespace-nowrap text-neutral-400 dark:text-neutral-500">Price</th>
+               <th class="px-4 py-3 whitespace-nowrap text-neutral-400 dark:text-neutral-500">Action</th>
             </tr>
           </thead>
           <tbody>
             @for (sku of skus(); track sku.id) {
               <tr class="border-b border-neutral-50 dark:border-neutral-800/60 last:border-0 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 transition-colors">
-                <td class="px-4 py-3 text-neutral-400">{{ sku.id }}</td>
+                <td class="px-4 py-3 text-neutral-400 dark:text-neutral-500">{{ sku.id }}</td>
                 <td class="px-4 py-3 font-mono text-xs font-medium text-neutral-900 dark:text-white whitespace-nowrap">{{ sku.skuCode }}</td>
-                <td class="px-4 py-3 text-neutral-500 whitespace-nowrap">{{ sku.variantKeys }}</td>
-                <td class="px-4 py-3 text-neutral-500">{{ sku.variantDetails }}</td>
+                <td class="px-4 py-3 text-neutral-500 dark:text-neutral-400 whitespace-nowrap">{{ sku.variantKeys }}</td>
+                <td class="px-4 py-3 text-neutral-500 dark:text-neutral-400">{{ sku.variantDetails }}</td>
                 <td class="px-4 py-3 text-neutral-900 dark:text-white whitespace-nowrap">LKR {{ sku.price }}</td>
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-2 whitespace-nowrap">
@@ -81,7 +81,7 @@ type SkuRow = {
               </tr>
             } @empty {
               <tr>
-                <td colspan="6" class="px-4 py-10 text-center text-sm text-neutral-400">No SKUs generated. Click "Generate SKUs" button.</td>
+                <td colspan="6" class="px-4 py-10 text-center text-sm text-neutral-400 dark:text-neutral-500">No SKUs generated. Click "Generate SKUs" button.</td>
               </tr>
             }
           </tbody>
@@ -116,36 +116,36 @@ type SkuRow = {
           </div>
           <div class="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">SKU CODE</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">SKU CODE</label>
               <input type="text" [value]="sku.skuCode" disabled class="w-full px-3.5 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-400 cursor-not-allowed font-mono">
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">VARIANT KEYS</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">VARIANT KEYS</label>
               <input type="text" [value]="sku.variantKeys" disabled class="w-full px-3.5 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-400 cursor-not-allowed">
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">VARIANT DETAILS</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">VARIANT DETAILS</label>
               <input type="text" [value]="sku.variantDetails" disabled class="w-full px-3.5 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-400 cursor-not-allowed">
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">DESCRIPTION</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">DESCRIPTION</label>
               <textarea [(ngModel)]="editDraft.description" name="skuDesc" rows="3"
                         class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
             </div>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1.5">PRICE *</label>
+                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">PRICE *</label>
                 <input type="number" min="0" step="0.01" [(ngModel)]="editDraft.price" name="skuPrice"
                        class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
               </div>
               <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1.5">STOCK QUANTITY</label>
+                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">STOCK QUANTITY</label>
                 <input type="number" min="0" [(ngModel)]="editDraft.stock" name="skuStock"
                        class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
               </div>
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">SKU IMAGES</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">SKU IMAGES</label>
               <div class="grid grid-cols-4 sm:grid-cols-5 gap-2">
                 @for (img of editDraft.images; track img; let i = $index) {
                   <div class="relative group">
@@ -160,14 +160,14 @@ type SkuRow = {
                 <button type="button" (click)="openSkuImagePicker()" [disabled]="uploadingSkuImage()"
                         class="aspect-square flex flex-col items-center justify-center gap-1 bg-neutral-50 dark:bg-neutral-800 border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg hover:border-primary transition-all cursor-pointer disabled:opacity-50">
                   <span class="text-base text-neutral-400">+</span>
-                  <span class="text-[10px] font-medium text-neutral-500">{{ uploadingSkuImage() ? 'Uploading…' : 'Add Media' }}</span>
+                  <span class="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">{{ uploadingSkuImage() ? 'Uploading…' : 'Add Media' }}</span>
                 </button>
               </div>
               <input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" #skuImageInput class="hidden" (change)="onSkuImageSelected($event)">
             </div>
           </div>
           <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-100 dark:border-neutral-800">
-            <button type="button" (click)="closeModals()" class="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700 cursor-pointer">CLOSE</button>
+            <button type="button" (click)="closeModals()" class="px-4 py-2 text-sm text-neutral-400 hover:text-neutral-700 cursor-pointer">CLOSE</button>
             <button type="button" (click)="saveSku()" [disabled]="savingSku()"
                     class="px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer">
               {{ savingSku() ? 'Saving…' : 'UPDATE' }}
@@ -186,23 +186,23 @@ type SkuRow = {
             <button type="button" (click)="closeModals()" class="text-neutral-400 hover:text-neutral-700 cursor-pointer text-lg leading-none">✕</button>
           </div>
           <div class="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
-            <div><label class="block text-xs font-medium text-neutral-500 mb-1.5">SKU CODE</label>
+            <div><label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">SKU CODE</label>
               <input type="text" [value]="sku.skuCode" readonly class="w-full px-3.5 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-500 cursor-not-allowed font-mono"></div>
-            <div><label class="block text-xs font-medium text-neutral-500 mb-1.5">VARIANT KEYS</label>
+            <div><label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">VARIANT KEYS</label>
               <input type="text" [value]="sku.variantKeys" readonly class="w-full px-3.5 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-500 cursor-not-allowed"></div>
-            <div><label class="block text-xs font-medium text-neutral-500 mb-1.5">VARIANT DETAILS</label>
+            <div><label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">VARIANT DETAILS</label>
               <input type="text" [value]="sku.variantDetails" readonly class="w-full px-3.5 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-500 cursor-not-allowed"></div>
-            <div><label class="block text-xs font-medium text-neutral-500 mb-1.5">DESCRIPTION</label>
+            <div><label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">DESCRIPTION</label>
               <textarea [value]="sku.description" rows="3" readonly class="w-full px-3.5 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-500 cursor-not-allowed"></textarea></div>
             <div class="grid grid-cols-2 gap-4">
-              <div><label class="block text-xs font-medium text-neutral-500 mb-1.5">PRICE</label>
+              <div><label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">PRICE</label>
                 <input type="text" [value]="sku.price" readonly class="w-full px-3.5 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-500 cursor-not-allowed"></div>
-              <div><label class="block text-xs font-medium text-neutral-500 mb-1.5">STOCK QUANTITY</label>
+              <div><label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">STOCK QUANTITY</label>
                 <input type="text" [value]="sku.stock" readonly class="w-full px-3.5 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-500 cursor-not-allowed"></div>
             </div>
             @if (sku.images.length) {
               <div>
-                <label class="block text-xs font-medium text-neutral-500 mb-1.5">SKU IMAGES</label>
+                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">SKU IMAGES</label>
                 <div class="flex flex-wrap gap-2">
                   @for (img of sku.images; track img; let i = $index) {
                     <div class="relative">

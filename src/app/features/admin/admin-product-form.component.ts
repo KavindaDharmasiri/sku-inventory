@@ -33,21 +33,21 @@ import { ToastService } from '../../core/services/toast.service';
           <h3 class="text-sm font-semibold text-neutral-900 dark:text-white">Basic Information</h3>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">Product Status</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Product Status</label>
               <select [(ngModel)]="form.status" name="status" class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20">
                 <option value="ACTIVE">ACTIVE</option>
                 <option value="INACTIVE">INACTIVE</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">Stock Status</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Stock Status</label>
               <label class="flex items-center gap-2 px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl cursor-pointer">
                 <input type="checkbox" [(ngModel)]="form.stockStatus" name="stockStatus" class="accent-primary">
                 <span class="text-sm text-neutral-900 dark:text-white">In Stock</span>
               </label>
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">Charge Tax</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Charge Tax</label>
               <label class="flex items-center gap-2 px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl cursor-pointer">
                 <input type="checkbox" [(ngModel)]="form.chargeTax" name="chargeTax" class="accent-primary">
                 <span class="text-sm text-neutral-900 dark:text-white">8% tax applies</span>
@@ -61,13 +61,13 @@ import { ToastService } from '../../core/services/toast.service';
           <h3 class="text-sm font-semibold text-neutral-900 dark:text-white">Product Classification</h3>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">Product Type</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Product Type</label>
               <select disabled class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-400 cursor-not-allowed">
                 <option>Product</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">Category *</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Category *</label>
               <select [(ngModel)]="form.categoryId" name="categoryId" (change)="onCategoryChange()" required class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20">
                 <option [ngValue]="null" disabled>Select Category</option>
                 @for (c of categories(); track c.id) {
@@ -76,7 +76,7 @@ import { ToastService } from '../../core/services/toast.service';
               </select>
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">Subcategory *</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Subcategory *</label>
               <select [(ngModel)]="form.subCategoryId" name="subCategoryId" [disabled]="!form.categoryId" required class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50">
                 <option [ngValue]="null" disabled>Select Subcategory</option>
                 @for (s of filteredSubcategories(); track s.id) {
@@ -92,26 +92,26 @@ import { ToastService } from '../../core/services/toast.service';
           <h3 class="text-sm font-semibold text-neutral-900 dark:text-white">Product Information</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">Product Name/Title *</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Product Name/Title *</label>
               <input type="text" [(ngModel)]="form.name" name="name" required class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">Product Subtitle</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Product Subtitle</label>
               <input type="text" [(ngModel)]="form.subtitle" name="subtitle" placeholder="Product Subtitle" class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
             </div>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">Base SKU *</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Base SKU *</label>
               <input type="text" [(ngModel)]="form.baseSku" name="baseSku" required class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white uppercase focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="e.g. TEE-WHT">
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">Product Price (LKR) *</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Product Price (LKR) *</label>
               <input type="number" min="0" step="0.01" [(ngModel)]="form.price" name="price" required class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
             </div>
           </div>
           <div>
-            <label class="block text-xs font-medium text-neutral-500 mb-1.5">Product Description *</label>
+            <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Product Description *</label>
             <textarea [(ngModel)]="form.description" name="description" rows="4" required class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
           </div>
         </div>
@@ -142,9 +142,9 @@ import { ToastService } from '../../core/services/toast.service';
             @if (!images().length && !uploadingImages()) {
               <button type="button" (click)="openImagesPicker()"
                       class="col-span-full h-32 flex flex-col items-center justify-center gap-1.5 bg-neutral-50 dark:bg-neutral-800 border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-xl hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
-                <span class="text-lg text-neutral-400">+</span>
+                <span class="text-lg text-neutral-400 dark:text-neutral-500">+</span>
                 <span class="text-xs font-medium text-neutral-600 dark:text-neutral-400">Add Media</span>
-                <span class="text-[11px] text-neutral-400">PNG, JPG, WEBP up to 8 MB each</span>
+                <span class="text-[11px] text-neutral-400 dark:text-neutral-500">PNG, JPG, WEBP up to 8 MB each</span>
               </button>
             }
           </div>
@@ -155,7 +155,7 @@ import { ToastService } from '../../core/services/toast.service';
           <h3 class="text-sm font-semibold text-neutral-900 dark:text-white">Tags</h3>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">Category Tags</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Category Tags</label>
               <div class="flex flex-wrap gap-1.5 p-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl min-h-[46px]">
                 @for (tag of categoryTags(); track tag) {
                   <span class="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-xs rounded-lg">
@@ -168,7 +168,7 @@ import { ToastService } from '../../core/services/toast.service';
               </div>
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">Meta Tags</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">Meta Tags</label>
               <div class="flex flex-wrap gap-1.5 p-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl min-h-[46px]">
                 @for (tag of metaTags(); track tag) {
                   <span class="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-xs rounded-lg">
@@ -181,7 +181,7 @@ import { ToastService } from '../../core/services/toast.service';
               </div>
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 mb-1.5">GA-4 Meta Tags</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">GA-4 Meta Tags</label>
               <div class="flex flex-wrap gap-1.5 p-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl min-h-[46px]">
                 @for (tag of ga4Tags(); track tag) {
                   <span class="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-xs rounded-lg">
@@ -202,14 +202,14 @@ import { ToastService } from '../../core/services/toast.service';
           <label class="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl cursor-pointer">
             <div>
               <p class="text-sm font-medium text-neutral-900 dark:text-white">Featured on Homepage</p>
-              <p class="text-xs text-neutral-400">Display this product in the hero section</p>
+              <p class="text-xs text-neutral-400 dark:text-neutral-500">Display this product in the hero section</p>
             </div>
             <input type="checkbox" [(ngModel)]="form.featuredOnHomepage" name="featured" class="w-4 h-4 accent-primary cursor-pointer">
           </label>
           <label class="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl cursor-pointer">
             <div>
               <p class="text-sm font-medium text-neutral-900 dark:text-white">Show in New Arrivals</p>
-              <p class="text-xs text-neutral-400">Add to the 'Just In' collection automatically</p>
+              <p class="text-xs text-neutral-400 dark:text-neutral-500">Add to the 'Just In' collection automatically</p>
             </div>
             <input type="checkbox" [(ngModel)]="form.showInNewArrivals" name="newArrivals" class="w-4 h-4 accent-primary cursor-pointer">
           </label>
@@ -217,7 +217,7 @@ import { ToastService } from '../../core/services/toast.service';
 
         <!-- Actions -->
         <div class="flex items-center justify-end gap-3 pb-4">
-          <a routerLink="/admin/products" class="text-sm text-neutral-500 hover:text-neutral-700 transition-colors">Cancel</a>
+          <a routerLink="/admin/products" class="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 transition-colors">Cancel</a>
           <button type="submit" [disabled]="saving()"
                   class="px-6 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer">
             {{ saving() ? 'Saving…' : (editId() ? 'Update & Next' : 'Save as Draft & Next') }}
