@@ -57,11 +57,11 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
             <table class="w-full min-w-[640px] text-sm">
               <thead>
                 <tr class="border-b border-neutral-100 dark:border-neutral-800">
-                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Order ID</th>
-                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Customer</th>
-                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Total</th>
-                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
-                  <th class="whitespace-nowrap px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">Actions</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Order ID</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Customer</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Total</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Status</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-neutral-50 dark:divide-neutral-800">
@@ -131,10 +131,10 @@ export class AdminOrdersComponent implements OnInit {
 
   getStatusClass(status: string): string {
     const map: Record<string, string> = {
-      pending: 'bg-amber-50 text-amber-700', processing: 'bg-sky-50 text-sky-700',
-      shipped: 'bg-blue-50 text-blue-700', delivered: 'bg-emerald-50 text-emerald-700',
-      cancelled: 'bg-red-50 text-red-700',
+      pending: 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400', processing: 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400',
+      shipped: 'bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400', delivered: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400',
+      cancelled: 'bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-400',
     };
-    return map[status] || 'bg-neutral-50 text-neutral-700';
+    return map[status] || 'bg-neutral-50 text-neutral-700 dark:bg-neutral-500/15 dark:text-neutral-400';
   }
 }

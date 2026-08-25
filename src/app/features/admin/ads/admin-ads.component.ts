@@ -15,11 +15,11 @@ import { ApiService } from '../../../core/services/api.service';
               <div class="flex items-center justify-between gap-2">
                 <p class="text-sm font-semibold text-neutral-900 dark:text-white truncate">{{ ad.title || 'Untitled' }}</p>
                 <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full shrink-0"
-                      [class]="ad.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-neutral-100 text-neutral-500'">
+                      [class]="ad.isActive ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'">
                   {{ ad.isActive ? 'Live' : 'Off' }}
                 </span>
               </div>
-              <p class="text-xs text-neutral-500">Position: <span class="capitalize">{{ ad.position || 'home' }}</span></p>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400">Position: <span class="capitalize">{{ ad.position || 'home' }}</span></p>
               @if (ad.link) {
                 <p class="text-xs text-primary truncate">{{ ad.link }}</p>
               }

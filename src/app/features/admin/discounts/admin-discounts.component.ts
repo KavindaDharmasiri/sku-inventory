@@ -24,7 +24,7 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
           <h2 class="text-lg font-semibold text-neutral-900 dark:text-white">{{ editing() ? 'Edit Discount' : 'New Discount' }}</h2>
           <form (ngSubmit)="save()" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-medium text-neutral-500 uppercase mb-1">Scope</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">Scope</label>
               <select [(ngModel)]="form.scope" name="scope"
                       class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                 <option value="product">Product</option>
@@ -33,7 +33,7 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
               </select>
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 uppercase mb-1">Discount Type</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">Discount Type</label>
               <select [(ngModel)]="form.discountType" name="discountType"
                       class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                 <option value="percent">Percentage</option>
@@ -41,38 +41,38 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
               </select>
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 uppercase mb-1">Discount Value</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">Discount Value</label>
               <input type="number" [(ngModel)]="form.discountValue" name="discountValue" required min="0" step="0.01"
                      class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
             </div>
             @if (form.scope === 'product') {
               <div>
-                <label class="block text-xs font-medium text-neutral-500 uppercase mb-1">Product ID</label>
+                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">Product ID</label>
                 <input type="number" [(ngModel)]="form.productId" name="productId" min="1"
                        class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
               </div>
             }
             @if (form.scope === 'category') {
               <div>
-                <label class="block text-xs font-medium text-neutral-500 uppercase mb-1">Category ID</label>
+                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">Category ID</label>
                 <input type="number" [(ngModel)]="form.categoryId" name="categoryId" min="1"
                        class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
               </div>
             }
             @if (form.scope === 'subcategory') {
               <div>
-                <label class="block text-xs font-medium text-neutral-500 uppercase mb-1">Subcategory ID</label>
+                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">Subcategory ID</label>
                 <input type="number" [(ngModel)]="form.subcategoryId" name="subcategoryId" min="1"
                        class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
               </div>
             }
             <div>
-              <label class="block text-xs font-medium text-neutral-500 uppercase mb-1">Valid From</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">Valid From</label>
               <input type="date" [(ngModel)]="form.validFrom" name="validFrom"
                      class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
             </div>
             <div>
-              <label class="block text-xs font-medium text-neutral-500 uppercase mb-1">Valid Until</label>
+              <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase mb-1">Valid Until</label>
               <input type="date" [(ngModel)]="form.validUntil" name="validUntil"
                      class="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
             </div>
@@ -111,13 +111,13 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
             <table class="w-full min-w-[640px] text-sm">
               <thead>
                 <tr class="border-b border-neutral-100 dark:border-neutral-800">
-                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Name</th>
-                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Scope</th>
-                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Target</th>
-                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Value</th>
-                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Valid Until</th>
-                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
-                  <th class="whitespace-nowrap px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">Actions</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Name</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Scope</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Target</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Value</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Valid Until</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Status</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-neutral-50 dark:divide-neutral-800">
@@ -132,7 +132,7 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
                   <td class="px-6 py-4 text-neutral-600 dark:text-neutral-400">{{ d.validUntil | date:'mediumDate' }}</td>
                   <td class="px-6 py-4">
                     <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full"
-                          [class]="d.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-neutral-100 text-neutral-500'">
+                          [class]="d.isActive ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'">
                       {{ d.isActive ? 'Active' : 'Inactive' }}
                     </span>
                   </td>

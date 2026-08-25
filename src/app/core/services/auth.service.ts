@@ -15,7 +15,7 @@ export class AuthService {
   readonly user = this._user.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly isAuthenticated = computed(() => !!this._token());
-  readonly isAdmin = computed(() => this._user()?.userType === 'admin');
+  readonly isAdmin = computed(() => this._user()?.userType?.toLowerCase() === 'admin');
 
   constructor(
     private http: HttpClient,

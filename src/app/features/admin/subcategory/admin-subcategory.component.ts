@@ -44,10 +44,10 @@ import { ToastService } from '../../../core/services/toast.service';
             <table class="w-full min-w-[640px] text-sm">
               <thead>
                 <tr class="border-b border-neutral-100 dark:border-neutral-800">
-                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Name</th>
-                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Category</th>
-                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
-                  <th class="whitespace-nowrap px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">Actions</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Name</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Category</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Status</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Actions</th>
                 </tr>
               </thead>
             <tbody class="divide-y divide-neutral-50 dark:divide-neutral-800">
@@ -57,7 +57,7 @@ import { ToastService } from '../../../core/services/toast.service';
                 <td class="px-6 py-4 text-neutral-600 dark:text-neutral-400">{{ s.categoryName || '—' }}</td>
                 <td class="px-6 py-4">
                   <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full"
-                        [class]="s.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-neutral-100 text-neutral-500'">
+                        [class]="s.isActive ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'">
                     {{ s.isActive ? 'Active' : 'Hidden' }}
                   </span>
                 </td>

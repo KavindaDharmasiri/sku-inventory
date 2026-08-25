@@ -55,7 +55,7 @@ export function requireAdmin(req: Request, res: any): { userId: number; email: s
     res.status(401).json({ success: false, error: 'Unauthorized' });
     return null;
   }
-  if (user.userType !== 'admin') {
+  if (user.userType?.toLowerCase() !== 'admin') {
     res.status(403).json({ success: false, error: 'Admin access required' });
     return null;
   }

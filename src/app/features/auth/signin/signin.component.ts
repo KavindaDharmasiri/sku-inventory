@@ -169,7 +169,7 @@ export class SigninComponent {
       const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
       if (returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('/auth')) {
         this.router.navigateByUrl(returnUrl);
-      } else if (user?.userType === 'admin') {
+      } else if (user?.userType?.toLowerCase() === 'admin') {
         this.router.navigate(['/admin']);
       } else {
         this.router.navigate(['/']);

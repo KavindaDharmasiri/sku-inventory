@@ -19,7 +19,7 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
             @for (b of bestSellers(); track b.productName) {
               <div class="flex items-center justify-between text-sm">
                 <span class="text-neutral-900 dark:text-white truncate max-w-[60%]">{{ b.productName }}</span>
-                <span class="text-neutral-500 shrink-0 ml-4">{{ b.unitsSold }} sold · {{ b.revenue | currency }}</span>
+                <span class="text-neutral-500 dark:text-neutral-400 shrink-0 ml-4">{{ b.unitsSold }} sold · {{ b.revenue | currency }}</span>
               </div>
             } @empty {
               <p class="text-sm text-neutral-400">No sales yet.</p>
@@ -34,7 +34,7 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
             @for (s of byStatus(); track s.status) {
               <div class="flex items-center justify-between text-sm">
                 <span class="capitalize text-neutral-900 dark:text-white">{{ s.status }}</span>
-                <span class="text-neutral-500">{{ s.count }} · {{ s.total | currency }}</span>
+                <span class="text-neutral-500 dark:text-neutral-400">{{ s.count }} · {{ s.total | currency }}</span>
               </div>
             } @empty {
               <p class="text-sm text-neutral-400">No orders yet.</p>
@@ -53,7 +53,7 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
                 {{ l.prodName }}
               </a>
               <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full"
-                    [class]="l.stock === 0 ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'">
+                    [class]="l.stock === 0 ? 'bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-400' : 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400'">
                 {{ l.stock }} left
               </span>
             </div>
