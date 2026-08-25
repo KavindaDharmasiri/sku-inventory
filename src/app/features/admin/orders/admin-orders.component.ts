@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { I18nService } from '../../../core/services/i18n.service';
 import { CurrencyPipe } from '../../../shared/pipes/pipes';
 
@@ -13,20 +14,29 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
       <h1 class="text-2xl font-display font-bold text-neutral-900 dark:text-white">
         {{ i18n.t('admin.orders') }}
       </h1>
-      <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-[640px] text-sm">
-            <thead>
-              <tr class="border-b border-neutral-100 dark:border-neutral-800">
-                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Order ID</th>
-                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Customer</th>
-                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Total</th>
-                <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
-                <th class="whitespace-nowrap px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-neutral-50 dark:divide-neutral-800">
-              @for (order of orders(); track order.id) {
+      @if (loading()) {
+        <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden p-6">
+          <div class="space-y-3 animate-pulse">
+            @for (i of [1,2,3]; track i) {
+              <div class="h-12 bg-neutral-100 dark:bg-neutral-800 rounded-lg"></div>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[640px] text-sm">
+              <thead>
+                <tr class="border-b border-neutral-100 dark:border-neutral-800">
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Order ID</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Customer</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Total</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
+                  <th class="whitespace-nowrap px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-neutral-50 dark:divide-neutral-800">
+                @for (order of orders(); track order.id) {
                 <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
                   <td class="px-6 py-4 font-mono text-xs text-neutral-500">{{ order.orderNumber || order.id }}</td>
                   <td class="px-6 py-4 text-neutral-900 dark:text-white">{{ order.customerName || ('User ' + order.userId) }}</td>
@@ -42,28 +52,31 @@ import { CurrencyPipe } from '../../../shared/pipes/pipes';
                        class="text-xs text-primary hover:text-primary-dark font-medium">View</a>
                   </td>
                 </tr>
-              } @empty {
-                <tr>
-                  <td colspan="5" class="px-6 py-12 text-center text-neutral-400">No orders</td>
-                </tr>
-              }
-            </tbody>
-          </table>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="px-6 py-12 text-center text-neutral-400">No orders</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      }
     </div>
   `,
 })
 export class AdminOrdersComponent implements OnInit {
   private api = inject(ApiService);
+  private toast = inject(ToastService);
   i18n = inject(I18nService);
 
   orders = signal<any[]>([]);
+  loading = signal(true);
 
   ngOnInit(): void {
     this.api.get<any[]>('/admin/orders').subscribe({
-      next: (res) => { if (res?.data) this.orders.set(res.data); },
-      error: () => {},
+      next: (res) => { if (res?.data) this.orders.set(res.data); this.loading.set(false); },
+      error: () => { this.loading.set(false); this.toast.error('Failed to load orders'); },
     });
   }
 

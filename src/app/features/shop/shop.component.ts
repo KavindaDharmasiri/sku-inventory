@@ -283,14 +283,14 @@ export class ShopComponent implements OnInit {
   private loadProducts(): void {
     this.api.get<Product[]>('/products').subscribe({
       next: (res) => { this.products.set(res?.data || []); this.loading.set(false); },
-      error: () => this.loading.set(false),
+      error: () => { this.toast.error('Failed to load products'); this.loading.set(false); },
     });
   }
 
   private loadCategories(): void {
     this.api.get<any[]>('/categories').subscribe({
       next: (res) => { if (res?.data) { this.categories.set(res.data); this.applyPendingCategory(); } },
-      error: () => {},
+      error: () => { this.toast.error('Failed to load categories'); },
     });
   }
 

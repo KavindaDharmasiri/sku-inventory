@@ -140,6 +140,7 @@ export class AccountProfileComponent {
 })
 export class AccountOrdersComponent implements OnInit {
   private api = inject(ApiService);
+  private toast = inject(ToastService);
 
   orders = signal<any[]>([]);
   loading = signal(true);
@@ -147,7 +148,7 @@ export class AccountOrdersComponent implements OnInit {
   ngOnInit(): void {
     this.api.get<any[]>('/orders').subscribe({
       next: (res) => { this.orders.set(res?.data || []); this.loading.set(false); },
-      error: () => this.loading.set(false),
+      error: () => { this.toast.error('Failed to load orders'); this.loading.set(false); },
     });
   }
 
@@ -186,9 +187,10 @@ export class AccountOrdersComponent implements OnInit {
             <div class="relative group block rounded-xl overflow-hidden border border-neutral-100 dark:border-neutral-800
                         hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
               <button (click)="remove(w.productId); $event.preventDefault(); $event.stopPropagation()"
+                      [disabled]="removingId() === w.productId"
                       class="absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full
                              bg-black/50 text-white hover:bg-red-500 transition-colors opacity-0 group-hover:opacity-100
-                             cursor-pointer"
+                             cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Remove from wishlist">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -217,6 +219,7 @@ export class AccountWishlistComponent implements OnInit {
 
   items = signal<any[]>([]);
   loading = signal(true);
+  removingId = signal<string | null>(null);
 
   ngOnInit(): void {
     this.load();
@@ -225,19 +228,21 @@ export class AccountWishlistComponent implements OnInit {
   load(): void {
     this.api.get<any[]>('/wishlist').subscribe({
       next: (res) => { this.items.set(res?.data || []); this.loading.set(false); },
-      error: () => this.loading.set(false),
+      error: () => { this.toast.error('Failed to load wishlist'); this.loading.set(false); },
     });
   }
 
   remove(productId: string): void {
+    this.removingId.set(productId);
     this.api.delete<any>(`/wishlist/${productId}`).subscribe({
       next: (res) => {
         if (res?.success) {
           this.items.update(items => items.filter(i => i.productId !== productId));
           this.toast.success('Removed from wishlist');
         }
+        this.removingId.set(null);
       },
-      error: (err) => { this.toast.error(err?.error?.error || 'Failed to remove'); },
+      error: (err) => { this.toast.error(err?.error?.error || 'Failed to remove'); this.removingId.set(null); },
     });
   }
 }
@@ -347,9 +352,11 @@ export class AccountWishlistComponent implements OnInit {
           @for (a of addresses(); track a.id) {
             <div class="p-4 border border-neutral-100 dark:border-neutral-800 rounded-xl relative group">
               <button (click)="remove(a.id)"
+                      [disabled]="removingId() === a.id"
                       class="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full
                              text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
-                             transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                             transition-colors opacity-0 group-hover:opacity-100 cursor-pointer
+                             disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Delete address">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -388,6 +395,7 @@ export class AccountAddressesComponent implements OnInit {
   showForm = signal(false);
   saving = signal(false);
   editingId = signal<string | null>(null);
+  removingId = signal<number | null>(null);
 
   form = {
     firstName: '',
@@ -408,7 +416,7 @@ export class AccountAddressesComponent implements OnInit {
   load(): void {
     this.api.get<any[]>('/addresses').subscribe({
       next: (res) => { this.addresses.set(res?.data || []); this.loading.set(false); },
-      error: () => this.loading.set(false),
+      error: () => { this.toast.error('Failed to load addresses'); this.loading.set(false); },
     });
   }
 
@@ -463,14 +471,16 @@ export class AccountAddressesComponent implements OnInit {
   }
 
   remove(id: string): void {
+    this.removingId.set(Number(id));
     this.api.delete<any>(`/addresses/${id}`).subscribe({
       next: (res) => {
         if (res?.success) {
           this.toast.success('Address deleted');
           this.load();
         }
+        this.removingId.set(null);
       },
-      error: (err) => { this.toast.error(err?.error?.error || 'Failed to delete address'); },
+      error: (err) => { this.toast.error(err?.error?.error || 'Failed to delete address'); this.removingId.set(null); },
     });
   }
 }

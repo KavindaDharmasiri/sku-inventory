@@ -34,6 +34,7 @@ const STATUS_OPTIONS = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCEL
             <div class="flex items-center justify-between">
               <span class="text-xs font-medium text-neutral-500 uppercase tracking-wider">Status</span>
               <select
+                [disabled]="updatingStatus()"
                 class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full border border-neutral-200 dark:border-neutral-700 bg-transparent cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
                 [ngModel]="o.status"
                 (ngModelChange)="updateStatus(o.id, $event)"
@@ -135,6 +136,7 @@ export class AdminOrderDetailComponent implements OnInit {
 
   order = signal<any>(null);
   loading = signal(true);
+  updatingStatus = signal(false);
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -143,20 +145,23 @@ export class AdminOrderDetailComponent implements OnInit {
         this.order.set((res?.data || []).find((o: any) => o.id === id) || null);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => { this.toast.error('Failed to load order'); this.loading.set(false); },
     });
   }
 
   updateStatus(id: number, newStatus: string): void {
+    this.updatingStatus.set(true);
     this.api.put<any>(`/admin/orders/${id}/status`, { status: newStatus }).subscribe({
       next: (res) => {
         if (res?.success) {
           this.order.update(o => o ? { ...o, status: newStatus } : o);
           this.toast.success('Status updated');
         }
+        this.updatingStatus.set(false);
       },
       error: (err) => {
         this.toast.error(err?.error?.error || 'Failed to update status');
+        this.updatingStatus.set(false);
       },
     });
   }

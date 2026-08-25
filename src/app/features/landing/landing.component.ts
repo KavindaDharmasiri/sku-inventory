@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { I18nService } from '../../core/services/i18n.service';
 import { ApiService } from '../../core/services/api.service';
+import { ToastService } from '../../core/services/toast.service';
 import type { Product, AdBanner } from '../../core/models/api.model';
 import { CurrencyPipe } from '../../shared/pipes/pipes';
 
@@ -182,6 +183,7 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
 export class LandingComponent implements OnInit {
   i18n = inject(I18nService);
   api = inject(ApiService);
+  private toast = inject(ToastService);
 
   featuredProducts = signal<Product[]>([]);
   banners = signal<AdBanner[]>([]);
@@ -196,14 +198,14 @@ export class LandingComponent implements OnInit {
   private loadFeatured(): void {
     this.api.get<Product[]>('/products/featured').subscribe({
       next: (res) => { if (res?.data) this.featuredProducts.set(res.data.slice(0, 8)); this.loadingFeatured.set(false); },
-      error: () => this.loadingFeatured.set(false),
+      error: () => { this.toast.error('Failed to load featured products'); this.loadingFeatured.set(false); },
     });
   }
 
   private loadBanners(): void {
     this.api.get<AdBanner[]>('/ads', { position: 'home' }).subscribe({
       next: (res) => { if (res?.data) this.banners.set(res.data); this.loadingBanners.set(false); },
-      error: () => this.loadingBanners.set(false),
+      error: () => { this.toast.error('Failed to load banners'); this.loadingBanners.set(false); },
     });
   }
 }
