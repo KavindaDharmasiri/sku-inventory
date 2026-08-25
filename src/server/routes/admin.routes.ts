@@ -1052,3 +1052,240 @@ adminRouter.delete('/api/admin/subcategories/:id', async (req: Request, res: Res
     res.status(500).json({ success: false, error: error?.message || 'Failed to delete subcategory' });
   }
 });
+
+/* ========================= Advanced Reports ========================= */
+
+function buildDateFilter(alias: string, dateFrom?: string, dateTo?: string) {
+  const conditions: string[] = [];
+  const params: any[] = [];
+  let idx = 1;
+  if (dateFrom) { conditions.push(`${alias} >= $${idx++}`); params.push(dateFrom); }
+  if (dateTo) { conditions.push(`${alias} <= $${idx++}`); params.push(dateTo + ' 23:59:59'); }
+  return { where: conditions.length ? ' AND ' + conditions.join(' AND ') : '', params, idx };
+}
+
+function groupExpr(groupBy?: string, dateCol = 'o.created_at') {
+  switch (groupBy) {
+    case 'day':   return { sel: `TO_CHAR(${dateCol}, 'YYYY-MM-DD') AS "period"`, grp: `TO_CHAR(${dateCol}, 'YYYY-MM-DD')` };
+    case 'month': return { sel: `TO_CHAR(${dateCol}, 'YYYY-MM') AS "period"`, grp: `TO_CHAR(${dateCol}, 'YYYY-MM')` };
+    case 'year':  return { sel: `TO_CHAR(${dateCol}, 'YYYY') AS "period"`, grp: `TO_CHAR(${dateCol}, 'YYYY')` };
+    default:      return { sel: `TO_CHAR(${dateCol}, 'YYYY-MM-DD') AS "period"`, grp: `TO_CHAR(${dateCol}, 'YYYY-MM-DD')` };
+  }
+}
+
+// Sales report — revenue, orders, avg order value grouped by period
+adminRouter.get('/api/admin/reports/sales', async (req: Request, res: Response) => {
+  try {
+    const { dateFrom, dateTo, groupBy } = req.query as Record<string, string>;
+    const g = groupExpr(groupBy);
+    const d = buildDateFilter('o.created_at', dateFrom, dateTo);
+    const rows = await query<any>(
+      `SELECT ${g.sel},
+              COUNT(*)::int AS "orderCount",
+              COALESCE(SUM(o.total), 0)::float8 AS "revenue",
+              COALESCE(AVG(o.total), 0)::float8 AS "avgOrderValue"
+       FROM orders o
+       WHERE o.status != 'cancelled'${d.where}
+       GROUP BY ${g.grp}
+       ORDER BY ${g.grp} ASC`,
+      d.params
+    );
+    const summary = await query<any>(
+      `SELECT COUNT(*)::int AS "totalOrders",
+              COALESCE(SUM(o.total), 0)::float8 AS "totalRevenue",
+              COALESCE(AVG(o.total), 0)::float8 AS "avgOrderValue"
+       FROM orders o
+       WHERE o.status != 'cancelled'${d.where}`,
+      d.params
+    );
+    res.json({ success: true, data: { rows, summary: summary[0] || {} } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to generate sales report' });
+  }
+});
+
+// Transaction report — all orders with payment details
+adminRouter.get('/api/admin/reports/transactions', async (req: Request, res: Response) => {
+  try {
+    const { dateFrom, dateTo, status } = req.query as Record<string, string>;
+    const d = buildDateFilter('o.created_at', dateFrom, dateTo);
+    let extraWhere = '';
+    const params = [...d.params];
+    let idx = d.idx;
+    if (status && status !== 'all') { extraWhere = ` AND LOWER(o.status) = $${idx++}`; params.push(status.toLowerCase()); }
+    const rows = await query<any>(
+      `SELECT o.order_id AS "orderId", o.order_number AS "orderNumber",
+              o.customer_name AS "customerName", o.email,
+              o.total::float8, o.discount::float8, o.tax::float8,
+              o.shipping_fee::float8 AS "shippingFee",
+              o.payment_method AS "paymentMethod",
+              LOWER(o.status) AS status,
+              o.created_at AS "createdAt"
+       FROM orders o
+       WHERE 1=1${d.where}${extraWhere}
+       ORDER BY o.created_at DESC`,
+      params
+    );
+    const summary = await query<any>(
+      `SELECT COUNT(*)::int AS "totalOrders",
+              COALESCE(SUM(o.total), 0)::float8 AS "totalRevenue",
+              COALESCE(SUM(o.discount), 0)::float8 AS "totalDiscounts",
+              COALESCE(SUM(o.tax), 0)::float8 AS "totalTax"
+       FROM orders o
+       WHERE 1=1${d.where}${extraWhere}`,
+      params
+    );
+    res.json({ success: true, data: { rows, summary: summary[0] || {} } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to generate transaction report' });
+  }
+});
+
+// Product performance report
+adminRouter.get('/api/admin/reports/products', async (req: Request, res: Response) => {
+  try {
+    const { dateFrom, dateTo } = req.query as Record<string, string>;
+    const d = buildDateFilter('o.created_at', dateFrom, dateTo);
+    const rows = await query<any>(
+      `SELECT p.product_id AS "productId", p.prod_name AS "productName",
+              p.prod_img AS "productImage",
+              COALESCE(SUM(oi.quantity), 0)::int AS "unitsSold",
+              COALESCE(SUM(oi.subtotal), 0)::float8 AS "revenue",
+              COALESCE(AVG(oi.price), 0)::float8 AS "avgPrice",
+              COUNT(DISTINCT o.order_id)::int AS "orderCount"
+       FROM products p
+       LEFT JOIN order_items oi ON oi.product_id = p.product_id
+       LEFT JOIN orders o ON o.order_id = oi.order_id AND o.status != 'cancelled'${d.where}
+       WHERE p.is_deleted = false
+       GROUP BY p.product_id, p.prod_name, p.prod_img
+       ORDER BY "unitsSold" DESC`,
+      d.params
+    );
+    const summary = await query<any>(
+      `SELECT COUNT(DISTINCT p.product_id)::int AS "totalProducts",
+              COALESCE(SUM(oi.quantity), 0)::int AS "totalUnitsSold",
+              COALESCE(SUM(oi.subtotal), 0)::float8 AS "totalRevenue"
+       FROM products p
+       LEFT JOIN order_items oi ON oi.product_id = p.product_id
+       LEFT JOIN orders o ON o.order_id = oi.order_id AND o.status != 'cancelled'${d.where}
+       WHERE p.is_deleted = false`,
+      d.params
+    );
+    res.json({ success: true, data: { rows, summary: summary[0] || {} } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to generate product report' });
+  }
+});
+
+// Order report — detailed order listing
+adminRouter.get('/api/admin/reports/orders', async (req: Request, res: Response) => {
+  try {
+    const { dateFrom, dateTo, status } = req.query as Record<string, string>;
+    const d = buildDateFilter('o.created_at', dateFrom, dateTo);
+    let extraWhere = '';
+    const params = [...d.params];
+    let idx = d.idx;
+    if (status && status !== 'all') { extraWhere = ` AND LOWER(o.status) = $${idx++}`; params.push(status.toLowerCase()); }
+    const rows = await query<any>(
+      `SELECT o.order_id AS "orderId", o.order_number AS "orderNumber",
+              o.customer_name AS "customerName", o.email,
+              o.total::float8, o.discount::float8, o.tax::float8,
+              o.shipping_fee::float8 AS "shippingFee",
+              LOWER(o.status) AS status,
+              o.payment_method AS "paymentMethod",
+              (SELECT COUNT(*)::int FROM order_items oi2 WHERE oi2.order_id = o.order_id) AS "itemCount",
+              o.created_at AS "createdAt"
+       FROM orders o
+       WHERE 1=1${d.where}${extraWhere}
+       ORDER BY o.created_at DESC`,
+      params
+    );
+    const summary = await query<any>(
+      `SELECT COUNT(*)::int AS "totalOrders",
+              COALESCE(SUM(o.total), 0)::float8 AS "totalRevenue",
+              COALESCE(SUM(o.discount), 0)::float8 AS "totalDiscounts",
+              COUNT(*) FILTER (WHERE LOWER(o.status) = 'delivered')::int AS "delivered",
+              COUNT(*) FILTER (WHERE LOWER(o.status) = 'cancelled')::int AS "cancelled",
+              COUNT(*) FILTER (WHERE LOWER(o.status) = 'pending')::int AS "pending"
+       FROM orders o
+       WHERE 1=1${d.where}${extraWhere}`,
+      params
+    );
+    res.json({ success: true, data: { rows, summary: summary[0] || {} } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to generate order report' });
+  }
+});
+
+// Inventory report — stock levels across all products/SKUs
+adminRouter.get('/api/admin/reports/inventory', async (_req: Request, res: Response) => {
+  try {
+    const rows = await query<any>(
+      `SELECT p.product_id AS "productId", p.prod_name AS "productName",
+              p.prod_img AS "productImage",
+              COALESCE(SUM(s.stock), 0)::int AS "totalStock",
+              COUNT(s.sku_id)::int AS "skuCount",
+              COALESCE(MIN(s.stock), 0)::int AS "minStock",
+              COALESCE(MAX(s.stock), 0)::int AS "maxStock",
+              COALESCE(AVG(s.price), 0)::float8 AS "avgPrice",
+              COALESCE(SUM(s.stock * s.price), 0)::float8 AS "stockValue"
+       FROM products p
+       LEFT JOIN product_skus s ON s.product_id = p.product_id AND s.is_active = true
+       WHERE p.is_deleted = false
+       GROUP BY p.product_id, p.prod_name, p.prod_img
+       ORDER BY "totalStock" ASC`
+    );
+    const summary = await query<any>(
+      `SELECT COUNT(DISTINCT p.product_id)::int AS "totalProducts",
+              COALESCE(SUM(s.stock), 0)::int AS "totalUnits",
+              COALESCE(SUM(s.stock * s.price), 0)::float8 AS "totalValue",
+              COUNT(*) FILTER (WHERE s.stock = 0)::int AS "outOfStock",
+              COUNT(*) FILTER (WHERE s.stock > 0 AND s.stock < 10)::int AS "lowStock"
+       FROM products p
+       LEFT JOIN product_skus s ON s.product_id = p.product_id AND s.is_active = true
+       WHERE p.is_deleted = false`
+    );
+    res.json({ success: true, data: { rows, summary: summary[0] || {} } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to generate inventory report' });
+  }
+});
+
+// Customer report — spending and order history
+adminRouter.get('/api/admin/reports/customers', async (req: Request, res: Response) => {
+  try {
+    const { dateFrom, dateTo } = req.query as Record<string, string>;
+    const d = buildDateFilter('o.created_at', dateFrom, dateTo);
+    const rows = await query<any>(
+      `SELECT u.user_id AS "userId", u.name AS "customerName", u.email,
+              COUNT(DISTINCT o.order_id)::int AS "totalOrders",
+              COALESCE(SUM(o.total), 0)::float8 AS "totalSpent",
+              COALESCE(AVG(o.total), 0)::float8 AS "avgOrderValue",
+              MIN(o.created_at) AS "firstOrder",
+              MAX(o.created_at) AS "lastOrder"
+       FROM users u
+       LEFT JOIN orders o ON o.user_id = u.user_id AND o.status != 'cancelled'${d.where}
+       WHERE u.is_active = true
+       GROUP BY u.user_id, u.name, u.email
+       HAVING COUNT(DISTINCT o.order_id) > 0
+       ORDER BY "totalSpent" DESC`,
+      d.params
+    );
+    const summary = await query<any>(
+      `SELECT COUNT(DISTINCT u.user_id)::int AS "activeCustomers",
+              COALESCE(AVG(sub.totalSpent), 0)::float8 AS "avgLifetimeValue",
+              COALESCE(MAX(sub.totalSpent), 0)::float8 AS "topSpender"
+       FROM (
+         SELECT u.user_id, COALESCE(SUM(o.total), 0)::float8 AS "totalSpent"
+         FROM users u
+         LEFT JOIN orders o ON o.user_id = u.user_id AND o.status != 'cancelled'${d.where}
+         WHERE u.is_active = true
+         GROUP BY u.user_id
+       ) sub`,
+      d.params
+    );
+    res.json({ success: true, data: { rows, summary: summary[0] || {} } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to generate customer report' });
+  }
+});
