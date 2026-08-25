@@ -38,6 +38,7 @@ import { ToastService } from '../../../core/services/toast.service';
                 <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Name</th>
                 <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Category</th>
                 <th class="whitespace-nowrap px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
+                <th class="whitespace-nowrap px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">Actions</th>
               </tr>
             </thead>
           <tbody class="divide-y divide-neutral-50 dark:divide-neutral-800">
@@ -51,9 +52,15 @@ import { ToastService } from '../../../core/services/toast.service';
                     {{ s.isActive ? 'Active' : 'Hidden' }}
                   </span>
                 </td>
+                <td class="px-6 py-4 text-right">
+                  <button (click)="deleteItem(s.id)" title="Delete subcategory"
+                          class="p-1.5 rounded-lg text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                  </button>
+                </td>
               </tr>
             } @empty {
-              <tr><td colspan="3" class="px-6 py-12 text-center text-neutral-400">No subcategories</td></tr>
+              <tr><td colspan="4" class="px-6 py-12 text-center text-neutral-400">No subcategories</td></tr>
             }
           </tbody>
           </table>
@@ -85,6 +92,19 @@ export class AdminSubcategoryComponent implements OnInit {
     this.api.get<any[]>('/admin/subcategories').subscribe({
       next: (res) => { if (res?.data) this.items.set(res.data); },
       error: () => {},
+    });
+  }
+
+  deleteItem(id: number): void {
+    if (!confirm('Are you sure you want to delete this subcategory?')) return;
+    this.api.delete<any>(`/admin/subcategories/${id}`).subscribe({
+      next: (res) => {
+        if (res?.success) {
+          this.toast.success('Subcategory deleted');
+          this.items.update(items => items.filter(i => i.id !== id));
+        }
+      },
+      error: (err) => { this.toast.error(err?.error?.error || 'Failed to delete subcategory'); },
     });
   }
 

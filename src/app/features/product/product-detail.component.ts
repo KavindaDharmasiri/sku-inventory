@@ -1,16 +1,19 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
+import { CurrencyPipe } from '../../shared/pipes/pipes';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 import { CartService, type SelectedSku } from '../../core/services/cart.service';
 import { ToastService } from '../../core/services/toast.service';
 import { I18nService } from '../../core/services/i18n.service';
 import type { Product, ProductSku } from '../../core/models/api.model';
-import { CurrencyPipe } from '../../shared/pipes/pipes';
 
 @Component({
   selector: 'skuvo-product-detail',
   standalone: true,
-  imports: [RouterLink, CurrencyPipe],
+  imports: [RouterLink, CurrencyPipe, FormsModule, DatePipe],
   template: `
     @if (loading()) {
       <div class="max-w-7xl mx-auto px-4 py-12">
@@ -135,10 +138,10 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
               </div>
             }
 
-            <div class="mt-8 space-y-4">
+            <div class="mt-8 flex gap-3">
               <button (click)="addToCart()"
                       [disabled]="!selectedSku() || displayStock() <= 0"
-                      class="w-full py-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900
+                      class="flex-1 py-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900
                              rounded-xl font-medium text-sm hover:bg-neutral-800 dark:hover:bg-neutral-100
                              transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
                              active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2">
@@ -148,6 +151,23 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
                 </svg>
                 {{ i18n.t('product.addToCart') }}
               </button>
+              @if (auth.isAuthenticated()) {
+                <button (click)="toggleWishlist(p)"
+                        class="shrink-0 w-14 h-14 rounded-xl border border-neutral-200 dark:border-neutral-700
+                               flex items-center justify-center transition-all duration-200 cursor-pointer
+                               hover:border-primary hover:bg-primary/5 active:scale-[0.95]">
+                  @if (isWishlisted()) {
+                    <svg class="w-5 h-5 text-error" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/>
+                    </svg>
+                  } @else {
+                    <svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
+                    </svg>
+                  }
+                </button>
+              }
             </div>
 
             <!-- Specs -->
@@ -178,6 +198,64 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
                 </div>
               </div>
             }
+
+            <!-- Reviews -->
+            <div class="mt-10">
+              <h3 class="text-sm font-semibold text-neutral-900 dark:text-white uppercase tracking-wider mb-4">
+                {{ i18n.t('product.reviews') }}
+              </h3>
+
+              @if (auth.isAuthenticated()) {
+                <div class="border border-neutral-100 dark:border-neutral-800 rounded-xl p-5 mb-6">
+                  <h4 class="text-sm font-medium text-neutral-900 dark:text-white mb-3">Write a Review</h4>
+                  <div class="flex items-center gap-1 mb-3">
+                    @for (star of [1, 2, 3, 4, 5]; track star) {
+                      <button (click)="reviewRating.set(star)" type="button" class="cursor-pointer">
+                        <svg class="w-6 h-6 transition-colors" [class.text-yellow-400]="star <= reviewRating()" [class.text-neutral-300]="star > reviewRating()" [attr.fill]="star <= reviewRating() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+                        </svg>
+                      </button>
+                    }
+                  </div>
+                  <textarea [(ngModel)]="reviewComment"
+                            rows="3"
+                            placeholder="Share your thoughts..."
+                            class="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"></textarea>
+                  <button (click)="submitReview(p)"
+                          [disabled]="!reviewRating() || !reviewComment().trim() || submittingReview()"
+                          class="mt-3 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl text-sm font-medium
+                                 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
+                                 cursor-pointer active:scale-[0.98]">
+                    {{ submittingReview() ? 'Submitting...' : 'Submit Review' }}
+                  </button>
+                </div>
+              }
+
+              @if (p.reviews && p.reviews.length) {
+                <div class="space-y-4">
+                  @for (review of p.reviews; track review.id) {
+                    <div class="border border-neutral-100 dark:border-neutral-800 rounded-xl p-5">
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-medium text-neutral-900 dark:text-white">{{ review.userName }}</span>
+                          <div class="flex items-center gap-0.5">
+                            @for (star of [1, 2, 3, 4, 5]; track star) {
+                              <svg class="w-4 h-4" [class.text-yellow-400]="star <= review.rating" [class.text-neutral-300]="star > review.rating" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+                              </svg>
+                            }
+                          </div>
+                        </div>
+                        <span class="text-xs text-neutral-400">{{ review.createdAt | date:'mediumDate' }}</span>
+                      </div>
+                      <p class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">{{ review.comment }}</p>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="text-sm text-neutral-400">No reviews yet</p>
+              }
+            </div>
           </div>
         </div>
       </div>
@@ -195,11 +273,16 @@ export class ProductDetailComponent implements OnInit {
   private cart = inject(CartService);
   private toast = inject(ToastService);
   i18n = inject(I18nService);
+  auth = inject(AuthService);
 
   product = signal<Product | null>(null);
   loading = signal(true);
   activeImage = signal<string | null>(null);
   selection = signal<Record<string, string>>({});
+  isWishlisted = signal(false);
+  reviewRating = signal(0);
+  reviewComment = signal('');
+  submittingReview = signal(false);
 
   usesSpecsOptions = computed<boolean>(() =>
     !!(this.product()?.specs?.some((sp) => (sp.attributes || []).length > 0))
@@ -359,8 +442,68 @@ export class ProductDetailComponent implements OnInit {
         this.selection.set(sel);
         this.activeImage.set(null);
         this.loading.set(false);
+        if (this.auth.isAuthenticated()) {
+          this.checkWishlist(id);
+        }
       },
       error: () => { this.loading.set(false); },
+    });
+  }
+
+  private checkWishlist(productId: string): void {
+    this.api.get<any>('/wishlist').subscribe({
+      next: (res) => {
+        const items = res?.data || [];
+        this.isWishlisted.set(items.some((item: any) => String(item.productId || item.id) === String(productId)));
+      },
+      error: () => {},
+    });
+  }
+
+  toggleWishlist(p: Product): void {
+    if (this.isWishlisted()) {
+      this.api.delete<any>('/wishlist/' + p.id).subscribe({
+        next: (res) => {
+          if (res?.success) {
+            this.isWishlisted.set(false);
+            this.toast.success('Removed from wishlist');
+          }
+        },
+        error: () => { this.toast.error('Failed to remove from wishlist'); },
+      });
+    } else {
+      this.api.post<any>('/wishlist/' + p.id, {}).subscribe({
+        next: (res) => {
+          if (res?.success) {
+            this.isWishlisted.set(true);
+            this.toast.success('Added to wishlist');
+          }
+        },
+        error: () => { this.toast.error('Failed to add to wishlist'); },
+      });
+    }
+  }
+
+  submitReview(p: Product): void {
+    if (!this.reviewRating() || !this.reviewComment().trim()) return;
+    this.submittingReview.set(true);
+    this.api.post<any>('/products/' + p.id + '/reviews', {
+      rating: this.reviewRating(),
+      comment: this.reviewComment().trim(),
+    }).subscribe({
+      next: (res) => {
+        if (res?.success) {
+          this.toast.success('Review submitted');
+          this.reviewRating.set(0);
+          this.reviewComment.set('');
+          this.loadProduct(p.id);
+        }
+        this.submittingReview.set(false);
+      },
+      error: () => {
+        this.toast.error('Failed to submit review');
+        this.submittingReview.set(false);
+      },
     });
   }
 

@@ -1,9 +1,11 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, ActivatedRoute, RouterOutlet } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { ApiService } from '../../core/services/api.service';
+import { ToastService } from '../../core/services/toast.service';
 import { CurrencyPipe } from '../../shared/pipes/pipes';
 
 @Component({
@@ -181,18 +183,28 @@ export class AccountOrdersComponent implements OnInit {
       } @else {
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
           @for (w of items(); track w.productId) {
-            <a [routerLink]="['/product', w.productId]"
-               class="group block rounded-xl overflow-hidden border border-neutral-100 dark:border-neutral-800
-                      hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-              <div class="aspect-square bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-                <img [src]="w.prodImg" [alt]="w.prodName" loading="lazy"
-                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-              </div>
-              <div class="p-3">
-                <p class="text-xs font-medium text-neutral-900 dark:text-white truncate">{{ w.prodName }}</p>
-                <p class="text-xs font-bold text-neutral-900 dark:text-white mt-1">{{ w.prodPrice | currency }}</p>
-              </div>
-            </a>
+            <div class="relative group block rounded-xl overflow-hidden border border-neutral-100 dark:border-neutral-800
+                        hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+              <button (click)="remove(w.productId); $event.preventDefault(); $event.stopPropagation()"
+                      class="absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full
+                             bg-black/50 text-white hover:bg-red-500 transition-colors opacity-0 group-hover:opacity-100
+                             cursor-pointer"
+                      title="Remove from wishlist">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+              <a [routerLink]="['/product', w.productId]" class="block">
+                <div class="aspect-square bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                  <img [src]="w.prodImg" [alt]="w.prodName" loading="lazy"
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                </div>
+                <div class="p-3">
+                  <p class="text-xs font-medium text-neutral-900 dark:text-white truncate">{{ w.prodName }}</p>
+                  <p class="text-xs font-bold text-neutral-900 dark:text-white mt-1">{{ w.prodPrice | currency }}</p>
+                </div>
+              </a>
+            </div>
           }
         </div>
       }
@@ -201,14 +213,31 @@ export class AccountOrdersComponent implements OnInit {
 })
 export class AccountWishlistComponent implements OnInit {
   private api = inject(ApiService);
+  private toast = inject(ToastService);
 
   items = signal<any[]>([]);
   loading = signal(true);
 
   ngOnInit(): void {
+    this.load();
+  }
+
+  load(): void {
     this.api.get<any[]>('/wishlist').subscribe({
       next: (res) => { this.items.set(res?.data || []); this.loading.set(false); },
       error: () => this.loading.set(false),
+    });
+  }
+
+  remove(productId: string): void {
+    this.api.delete<any>(`/wishlist/${productId}`).subscribe({
+      next: (res) => {
+        if (res?.success) {
+          this.items.update(items => items.filter(i => i.productId !== productId));
+          this.toast.success('Removed from wishlist');
+        }
+      },
+      error: (err) => { this.toast.error(err?.error?.error || 'Failed to remove'); },
     });
   }
 }
@@ -216,9 +245,94 @@ export class AccountWishlistComponent implements OnInit {
 @Component({
   selector: 'skuvo-account-addresses',
   standalone: true,
+  imports: [FormsModule],
   template: `
     <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 p-6">
-      <h2 class="text-lg font-semibold text-neutral-900 dark:text-white mb-6">Addresses</h2>
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-semibold text-neutral-900 dark:text-white">Addresses</h2>
+        <button (click)="openAddForm()"
+                class="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors cursor-pointer">
+          + Add Address
+        </button>
+      </div>
+
+      @if (showForm()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-base font-semibold text-neutral-900 dark:text-white mb-4">
+              {{ editingId() ? 'Edit Address' : 'New Address' }}
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs text-neutral-500 mb-1 block">First Name</label>
+                <input [(ngModel)]="form.firstName" type="text"
+                       class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
+                              bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40">
+              </div>
+              <div>
+                <label class="text-xs text-neutral-500 mb-1 block">Last Name</label>
+                <input [(ngModel)]="form.lastName" type="text"
+                       class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
+                              bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40">
+              </div>
+              <div class="sm:col-span-2">
+                <label class="text-xs text-neutral-500 mb-1 block">Address</label>
+                <input [(ngModel)]="form.address" type="text"
+                       class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
+                              bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40">
+              </div>
+              <div class="sm:col-span-2">
+                <label class="text-xs text-neutral-500 mb-1 block">Apartment (optional)</label>
+                <input [(ngModel)]="form.apartment" type="text"
+                       class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
+                              bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40">
+              </div>
+              <div>
+                <label class="text-xs text-neutral-500 mb-1 block">City</label>
+                <input [(ngModel)]="form.city" type="text"
+                       class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
+                              bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40">
+              </div>
+              <div>
+                <label class="text-xs text-neutral-500 mb-1 block">State</label>
+                <input [(ngModel)]="form.state" type="text"
+                       class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
+                              bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40">
+              </div>
+              <div>
+                <label class="text-xs text-neutral-500 mb-1 block">Zip Code</label>
+                <input [(ngModel)]="form.zipCode" type="text"
+                       class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
+                              bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40">
+              </div>
+              <div>
+                <label class="text-xs text-neutral-500 mb-1 block">Phone</label>
+                <input [(ngModel)]="form.phone" type="text"
+                       class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700
+                              bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40">
+              </div>
+            </div>
+            <div class="flex items-center gap-2 mt-4">
+              <input [(ngModel)]="form.isDefault" type="checkbox" id="setDefault"
+                     class="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary/40">
+              <label for="setDefault" class="text-sm text-neutral-600 dark:text-neutral-400">Set as default</label>
+            </div>
+            <div class="flex items-center justify-end gap-3 mt-6">
+              <button (click)="showForm.set(false)"
+                      class="px-4 py-2 text-sm font-medium rounded-lg border border-neutral-200 dark:border-neutral-700
+                             text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer">
+                Cancel
+              </button>
+              <button (click)="save()"
+                      [disabled]="saving()"
+                      class="px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90
+                             disabled:opacity-50 transition-colors cursor-pointer">
+                {{ saving() ? 'Saving...' : 'Save' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      }
 
       @if (loading()) {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-pulse">
@@ -231,12 +345,21 @@ export class AccountWishlistComponent implements OnInit {
       } @else {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           @for (a of addresses(); track a.id) {
-            <div class="p-4 border border-neutral-100 dark:border-neutral-800 rounded-xl relative">
+            <div class="p-4 border border-neutral-100 dark:border-neutral-800 rounded-xl relative group">
+              <button (click)="remove(a.id)"
+                      class="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full
+                             text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
+                             transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                      title="Delete address">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
               @if (a.isDefault) {
-                <span class="absolute top-3 right-3 px-2 py-0.5 text-[9px] font-bold uppercase
-                             bg-primary/10 text-primary rounded-full">Default</span>
+                <span class="inline-block px-2 py-0.5 text-[9px] font-bold uppercase
+                             bg-primary/10 text-primary rounded-full mb-2">Default</span>
               }
-              <p class="text-sm font-medium text-neutral-900 dark:text-white">
+              <p class="text-sm font-medium text-neutral-900 dark:text-white pr-6">
                 {{ fullName(a) }}
               </p>
               <p class="text-xs text-neutral-500 mt-1 leading-relaxed">
@@ -245,6 +368,10 @@ export class AccountWishlistComponent implements OnInit {
                 @if (a.phone) {<br>{{ a.phone }}
                 }
               </p>
+              <button (click)="openEditForm(a)"
+                      class="mt-2 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer">
+                Edit
+              </button>
             </div>
           }
         </div>
@@ -254,11 +381,31 @@ export class AccountWishlistComponent implements OnInit {
 })
 export class AccountAddressesComponent implements OnInit {
   private api = inject(ApiService);
+  private toast = inject(ToastService);
 
   addresses = signal<any[]>([]);
   loading = signal(true);
+  showForm = signal(false);
+  saving = signal(false);
+  editingId = signal<string | null>(null);
+
+  form = {
+    firstName: '',
+    lastName: '',
+    address: '',
+    apartment: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    phone: '',
+    isDefault: false,
+  };
 
   ngOnInit(): void {
+    this.load();
+  }
+
+  load(): void {
     this.api.get<any[]>('/addresses').subscribe({
       next: (res) => { this.addresses.set(res?.data || []); this.loading.set(false); },
       error: () => this.loading.set(false),
@@ -268,5 +415,62 @@ export class AccountAddressesComponent implements OnInit {
   fullName(a: any): string {
     const name = [a?.firstName, a?.lastName].filter((x: string) => !!x).join(' ');
     return name || 'Address';
+  }
+
+  openAddForm(): void {
+    this.editingId.set(null);
+    this.form = { firstName: '', lastName: '', address: '', apartment: '', city: '', state: '', zipCode: '', phone: '', isDefault: false };
+    this.showForm.set(true);
+  }
+
+  openEditForm(a: any): void {
+    this.editingId.set(a.id);
+    this.form = {
+      firstName: a.firstName || '',
+      lastName: a.lastName || '',
+      address: a.address || '',
+      apartment: a.apartment || '',
+      city: a.city || '',
+      state: a.state || '',
+      zipCode: a.zipCode || '',
+      phone: a.phone || '',
+      isDefault: !!a.isDefault,
+    };
+    this.showForm.set(true);
+  }
+
+  save(): void {
+    this.saving.set(true);
+    const id = this.editingId();
+    const req = id
+      ? this.api.put<any>(`/addresses/${id}`, { ...this.form })
+      : this.api.post<any>('/addresses', { ...this.form });
+
+    req.subscribe({
+      next: (res) => {
+        if (res?.success) {
+          this.toast.success(id ? 'Address updated' : 'Address saved');
+          this.showForm.set(false);
+          this.load();
+        }
+        this.saving.set(false);
+      },
+      error: (err) => {
+        this.toast.error(err?.error?.error || 'Failed to save address');
+        this.saving.set(false);
+      },
+    });
+  }
+
+  remove(id: string): void {
+    this.api.delete<any>(`/addresses/${id}`).subscribe({
+      next: (res) => {
+        if (res?.success) {
+          this.toast.success('Address deleted');
+          this.load();
+        }
+      },
+      error: (err) => { this.toast.error(err?.error?.error || 'Failed to delete address'); },
+    });
   }
 }

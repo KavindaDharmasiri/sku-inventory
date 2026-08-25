@@ -1,13 +1,17 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../../../core/services/api.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { CurrencyPipe } from '../../../../shared/pipes/pipes';
+
+const STATUS_OPTIONS = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 
 @Component({
   selector: 'skuvo-admin-order-detail',
   standalone: true,
-  imports: [RouterLink, CurrencyPipe, DatePipe],
+  imports: [RouterLink, FormsModule, CurrencyPipe, DatePipe],
   template: `
     <div class="space-y-6">
       <div class="flex items-center gap-4">
@@ -29,9 +33,15 @@ import { CurrencyPipe } from '../../../../shared/pipes/pipes';
           <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 p-6 space-y-4">
             <div class="flex items-center justify-between">
               <span class="text-xs font-medium text-neutral-500 uppercase tracking-wider">Status</span>
-              <span class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full" [class]="getStatusClass(o.status)">
-                {{ o.status }}
-              </span>
+              <select
+                class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full border border-neutral-200 dark:border-neutral-700 bg-transparent cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+                [ngModel]="o.status"
+                (ngModelChange)="updateStatus(o.id, $event)"
+              >
+                @for (s of statusOptions; track s) {
+                  <option [value]="s" [selected]="s === o.status">{{ s }}</option>
+                }
+              </select>
             </div>
             <div>
               <p class="text-xs text-neutral-500">Customer</p>
@@ -79,6 +89,35 @@ import { CurrencyPipe } from '../../../../shared/pipes/pipes';
             </div>
           </div>
         </div>
+
+        <!-- Order Items -->
+        @if (o.items?.length) {
+          <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 p-6">
+            <h3 class="text-sm font-semibold text-neutral-900 dark:text-white mb-4">Order Items</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-xs text-neutral-500 uppercase tracking-wider border-b border-neutral-100 dark:border-neutral-800">
+                    <th class="text-left pb-3 font-medium">Product</th>
+                    <th class="text-right pb-3 font-medium">Qty</th>
+                    <th class="text-right pb-3 font-medium">Price</th>
+                    <th class="text-right pb-3 font-medium">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of o.items; track item) {
+                    <tr class="border-b border-neutral-50 dark:border-neutral-800/50 last:border-0">
+                      <td class="py-3 text-neutral-900 dark:text-white">{{ item.productName || item.name || '—' }}</td>
+                      <td class="py-3 text-right text-neutral-600 dark:text-neutral-400">{{ item.quantity }}</td>
+                      <td class="py-3 text-right text-neutral-600 dark:text-neutral-400">{{ item.price | currency }}</td>
+                      <td class="py-3 text-right font-medium text-neutral-900 dark:text-white">{{ (item.price * item.quantity) | currency }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
       } @else {
         <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 p-12 text-center">
           <p class="text-neutral-400">Order not found.</p>
@@ -90,18 +129,35 @@ import { CurrencyPipe } from '../../../../shared/pipes/pipes';
 export class AdminOrderDetailComponent implements OnInit {
   private api = inject(ApiService);
   private route = inject(ActivatedRoute);
+  private toast = inject(ToastService);
+
+  statusOptions = STATUS_OPTIONS;
 
   order = signal<any>(null);
   loading = signal(true);
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.api.get<any[]>('/admin/orders').subscribe({
+    this.api.get<any[]>(`/admin/orders`).subscribe({
       next: (res) => {
         this.order.set((res?.data || []).find((o: any) => o.id === id) || null);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
+    });
+  }
+
+  updateStatus(id: number, newStatus: string): void {
+    this.api.put<any>(`/admin/orders/${id}/status`, { status: newStatus }).subscribe({
+      next: (res) => {
+        if (res?.success) {
+          this.order.update(o => o ? { ...o, status: newStatus } : o);
+          this.toast.success('Status updated');
+        }
+      },
+      error: (err) => {
+        this.toast.error(err?.error?.error || 'Failed to update status');
+      },
     });
   }
 
