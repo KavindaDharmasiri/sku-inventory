@@ -232,3 +232,127 @@ userRouter.get('/api/wishlist', async (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: error?.message || 'Failed to load wishlist' });
   }
 });
+
+// ===== Wishlist Add/Remove =====
+
+userRouter.post('/api/wishlist/:productId', async (req: Request, res: Response) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  try {
+    const productId = Number(req.params['productId']);
+    if (!Number.isInteger(productId)) {
+      res.status(400).json({ success: false, error: 'Invalid product id' });
+      return;
+    }
+    const prod = await query(`SELECT 1 FROM products WHERE product_id = $1 AND is_deleted = false AND status = 'ACTIVE'`, [productId]);
+    if (!prod.length) {
+      res.status(404).json({ success: false, error: 'Product not found' });
+      return;
+    }
+    await query(
+      `INSERT INTO wishlist_items (user_id, product_id, created_at) VALUES ($1, $2, NOW()) ON CONFLICT DO NOTHING`,
+      [user.userId, productId]
+    );
+    res.status(201).json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to add to wishlist' });
+  }
+});
+
+userRouter.delete('/api/wishlist/:productId', async (req: Request, res: Response) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  try {
+    const productId = Number(req.params['productId']);
+    await query(`DELETE FROM wishlist_items WHERE user_id = $1 AND product_id = $2`, [user.userId, productId]);
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to remove from wishlist' });
+  }
+});
+
+// ===== Address CRUD =====
+
+userRouter.post('/api/addresses', async (req: Request, res: Response) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  try {
+    const b = req.body || {};
+    const address = String(b.address || '').trim();
+    const city = String(b.city || '').trim();
+    const state = String(b.state || '').trim();
+    const zipCode = String(b.zipCode || '').trim();
+    if (!address || !city || !state || !zipCode) {
+      res.status(400).json({ success: false, error: 'Address, city, state and zip code are required' });
+      return;
+    }
+    if (b.isDefault) {
+      await query(`UPDATE addresses SET is_default = false WHERE user_id = $1`, [user.userId]);
+    }
+    const rows = await query<any>(
+      `INSERT INTO addresses (user_id, first_name, last_name, address, apartment, city, state, zip_code, phone, is_default)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       RETURNING address_id AS id, first_name AS "firstName", last_name AS "lastName",
+                 address, apartment, city, state, zip_code AS "zipCode", phone, is_default AS "isDefault"`,
+      [user.userId, String(b.firstName || '').trim() || null, String(b.lastName || '').trim() || null,
+       address, String(b.apartment || '').trim() || null, city, state, zipCode,
+       String(b.phone || '').trim() || null, b.isDefault === true]
+    );
+    res.status(201).json({ success: true, data: rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to create address' });
+  }
+});
+
+userRouter.put('/api/addresses/:id', async (req: Request, res: Response) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  try {
+    const id = Number(req.params['id']);
+    const b = req.body || {};
+    const address = String(b.address || '').trim();
+    const city = String(b.city || '').trim();
+    const state = String(b.state || '').trim();
+    const zipCode = String(b.zipCode || '').trim();
+    if (!address || !city || !state || !zipCode) {
+      res.status(400).json({ success: false, error: 'Address, city, state and zip code are required' });
+      return;
+    }
+    if (b.isDefault) {
+      await query(`UPDATE addresses SET is_default = false WHERE user_id = $1`, [user.userId]);
+    }
+    const rows = await query<any>(
+      `UPDATE addresses SET first_name = $1, last_name = $2, address = $3, apartment = $4,
+              city = $5, state = $6, zip_code = $7, phone = $8, is_default = $9
+       WHERE address_id = $10 AND user_id = $11
+       RETURNING address_id AS id, first_name AS "firstName", last_name AS "lastName",
+                 address, apartment, city, state, zip_code AS "zipCode", phone, is_default AS "isDefault"`,
+      [String(b.firstName || '').trim() || null, String(b.lastName || '').trim() || null,
+       address, String(b.apartment || '').trim() || null, city, state, zipCode,
+       String(b.phone || '').trim() || null, b.isDefault === true, id, user.userId]
+    );
+    if (!rows.length) {
+      res.status(404).json({ success: false, error: 'Address not found' });
+      return;
+    }
+    res.json({ success: true, data: rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to update address' });
+  }
+});
+
+userRouter.delete('/api/addresses/:id', async (req: Request, res: Response) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  try {
+    const id = Number(req.params['id']);
+    const rows = await query(`DELETE FROM addresses WHERE address_id = $1 AND user_id = $2 RETURNING address_id`, [id, user.userId]);
+    if (!rows.length) {
+      res.status(404).json({ success: false, error: 'Address not found' });
+      return;
+    }
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to delete address' });
+  }
+});

@@ -771,3 +771,231 @@ adminRouter.put('/api/admin/products/:id/skus/:skuId', async (req: Request, res:
     res.status(500).json({ success: false, error: error?.message || 'Failed to update SKU' });
   }
 });
+
+// ===== Admin: Order Status Update =====
+
+adminRouter.put('/api/admin/orders/:id/status', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
+  try {
+    const id = Number(req.params['id']);
+    const status = String(req.body?.status || '').toUpperCase();
+    const validStatuses = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+    if (!validStatuses.includes(status)) {
+      res.status(400).json({ success: false, error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+      return;
+    }
+    const rows = await query<any>(
+      `UPDATE orders SET status = $1 WHERE id = $2 RETURNING id, order_number AS "orderNumber", status`,
+      [status, id]
+    );
+    if (!rows.length) {
+      res.status(404).json({ success: false, error: 'Order not found' });
+      return;
+    }
+    await query(
+      `INSERT INTO audit_trails (user_id, user_email, action, entity_type, entity_id, metadata, ip_address, user_agent)
+       VALUES ($1,$2,'order_status_changed','order',$3,$4,$5,$6)`,
+      [user.userId, user.email, id, JSON.stringify({ status }), req.ip || '-', String(req.headers['user-agent'] || '-')]
+    );
+    res.json({ success: true, data: rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to update order status' });
+  }
+});
+
+// ===== Admin: Coupon CRUD =====
+
+adminRouter.post('/api/admin/coupons', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
+  try {
+    const b = req.body || {};
+    const code = String(b.code || '').trim().toUpperCase();
+    const discountType = String(b.discountType || 'percentage');
+    const discountValue = Number(b.discountValue);
+    if (!code || !['percentage', 'fixed'].includes(discountType) || !Number.isFinite(discountValue) || discountValue <= 0) {
+      res.status(400).json({ success: false, error: 'Code, discountType (percentage/fixed) and a positive discountValue are required' });
+      return;
+    }
+    const existing = await query(`SELECT 1 FROM coupons WHERE code = $1`, [code]);
+    if (existing.length) {
+      res.status(409).json({ success: false, error: 'A coupon with this code already exists' });
+      return;
+    }
+    const rows = await query<any>(
+      `INSERT INTO coupons (code, description, discount_type, discount_value, min_subtotal, valid_from, valid_until, is_active, max_uses)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       RETURNING coupon_id AS id, code, description, discount_type AS "discountType",
+                 discount_value::float8 AS "discountValue", min_subtotal::float8 AS "minSubtotal",
+                 valid_from AS "validFrom", valid_until AS "validUntil", is_active AS "isActive", max_uses AS "maxUses"`,
+      [code, String(b.description || '').trim() || null, discountType, discountValue,
+       Number(b.minSubtotal) || 0, b.validFrom || null, b.validUntil || null,
+       b.isActive !== false, Number(b.maxUses) || null]
+    );
+    res.status(201).json({ success: true, data: rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to create coupon' });
+  }
+});
+
+adminRouter.put('/api/admin/coupons/:id', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
+  try {
+    const id = Number(req.params['id']);
+    const b = req.body || {};
+    const code = String(b.code || '').trim().toUpperCase();
+    const discountType = String(b.discountType || 'percentage');
+    const discountValue = Number(b.discountValue);
+    if (!code || !['percentage', 'fixed'].includes(discountType) || !Number.isFinite(discountValue) || discountValue <= 0) {
+      res.status(400).json({ success: false, error: 'Code, discountType and a positive discountValue are required' });
+      return;
+    }
+    const rows = await query<any>(
+      `UPDATE coupons SET code = $1, description = $2, discount_type = $3, discount_value = $4,
+              min_subtotal = $5, valid_from = $6, valid_until = $7, is_active = $8, max_uses = $9
+       WHERE coupon_id = $10
+       RETURNING coupon_id AS id, code, description, discount_type AS "discountType",
+                 discount_value::float8 AS "discountValue", min_subtotal::float8 AS "minSubtotal",
+                 valid_from AS "validFrom", valid_until AS "validUntil", is_active AS "isActive", max_uses AS "maxUses"`,
+      [code, String(b.description || '').trim() || null, discountType, discountValue,
+       Number(b.minSubtotal) || 0, b.validFrom || null, b.validUntil || null,
+       b.isActive !== false, Number(b.maxUses) || null, id]
+    );
+    if (!rows.length) {
+      res.status(404).json({ success: false, error: 'Coupon not found' });
+      return;
+    }
+    res.json({ success: true, data: rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to update coupon' });
+  }
+});
+
+adminRouter.delete('/api/admin/coupons/:id', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
+  try {
+    const id = Number(req.params['id']);
+    const rows = await query(`DELETE FROM coupons WHERE coupon_id = $1 RETURNING coupon_id`, [id]);
+    if (!rows.length) {
+      res.status(404).json({ success: false, error: 'Coupon not found' });
+      return;
+    }
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to delete coupon' });
+  }
+});
+
+// ===== Admin: Discount CRUD =====
+
+adminRouter.post('/api/admin/discounts', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
+  try {
+    const b = req.body || {};
+    const scope = String(b.scope || 'product');
+    const discountType = String(b.discountType || 'percentage');
+    const discountValue = Number(b.discountValue);
+    if (!['product', 'category', 'subcategory'].includes(scope) || !['percentage', 'fixed'].includes(discountType) || !Number.isFinite(discountValue) || discountValue <= 0) {
+      res.status(400).json({ success: false, error: 'Valid scope, discountType and positive discountValue are required' });
+      return;
+    }
+    const rows = await query<any>(
+      `INSERT INTO discounts (scope, discount_type, discount_value, product_id, category_id, sub_category_id, valid_from, valid_until, is_active)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       RETURNING discount_id AS id, scope, discount_type AS "discountType", discount_value::float8 AS "discountValue",
+                 valid_from AS "validFrom", valid_until AS "validUntil", is_active AS "isActive"`,
+      [scope, discountType, discountValue, b.productId || null, b.categoryId || null, b.subCategoryId || null,
+       b.validFrom || null, b.validUntil || null, b.isActive !== false]
+    );
+    res.status(201).json({ success: true, data: rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to create discount' });
+  }
+});
+
+adminRouter.put('/api/admin/discounts/:id', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
+  try {
+    const id = Number(req.params['id']);
+    const b = req.body || {};
+    const scope = String(b.scope || 'product');
+    const discountType = String(b.discountType || 'percentage');
+    const discountValue = Number(b.discountValue);
+    if (!['product', 'category', 'subcategory'].includes(scope) || !['percentage', 'fixed'].includes(discountType) || !Number.isFinite(discountValue) || discountValue <= 0) {
+      res.status(400).json({ success: false, error: 'Valid scope, discountType and positive discountValue are required' });
+      return;
+    }
+    const rows = await query<any>(
+      `UPDATE discounts SET scope = $1, discount_type = $2, discount_value = $3,
+              product_id = $4, category_id = $5, sub_category_id = $6,
+              valid_from = $7, valid_until = $8, is_active = $9
+       WHERE discount_id = $10
+       RETURNING discount_id AS id, scope, discount_type AS "discountType", discount_value::float8 AS "discountValue",
+                 valid_from AS "validFrom", valid_until AS "validUntil", is_active AS "isActive"`,
+      [scope, discountType, discountValue, b.productId || null, b.categoryId || null, b.subCategoryId || null,
+       b.validFrom || null, b.validUntil || null, b.isActive !== false, id]
+    );
+    if (!rows.length) {
+      res.status(404).json({ success: false, error: 'Discount not found' });
+      return;
+    }
+    res.json({ success: true, data: rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to update discount' });
+  }
+});
+
+adminRouter.delete('/api/admin/discounts/:id', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
+  try {
+    const id = Number(req.params['id']);
+    const rows = await query(`DELETE FROM discounts WHERE discount_id = $1 RETURNING discount_id`, [id]);
+    if (!rows.length) {
+      res.status(404).json({ success: false, error: 'Discount not found' });
+      return;
+    }
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to delete discount' });
+  }
+});
+
+// ===== Admin: Category/Subcategory Delete =====
+
+adminRouter.delete('/api/admin/categories/:id', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
+  try {
+    const id = Number(req.params['id']);
+    const rows = await query(`DELETE FROM categories WHERE category_id = $1 RETURNING category_id`, [id]);
+    if (!rows.length) {
+      res.status(404).json({ success: false, error: 'Category not found' });
+      return;
+    }
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to delete category' });
+  }
+});
+
+adminRouter.delete('/api/admin/subcategories/:id', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
+  try {
+    const id = Number(req.params['id']);
+    const rows = await query(`DELETE FROM subcategories WHERE sub_category_id = $1 RETURNING sub_category_id`, [id]);
+    if (!rows.length) {
+      res.status(404).json({ success: false, error: 'Subcategory not found' });
+      return;
+    }
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to delete subcategory' });
+  }
+});

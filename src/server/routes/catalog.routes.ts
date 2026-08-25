@@ -1,17 +1,51 @@
 import { Router, type Request, type Response } from 'express';
 import { query, mapProduct, PRODUCT_SELECT, type ProductRow } from '../db';
+import { requireUser } from '../middleware/auth';
 
 export const catalogRouter = Router();
 
-catalogRouter.get('/api/products', async (_req: Request, res: Response) => {
+catalogRouter.get('/api/products', async (req: Request, res: Response) => {
   try {
-    const rows = await query<ProductRow>(
-      `${PRODUCT_SELECT}
-       WHERE p.is_deleted = false AND p.status = 'ACTIVE'
-       ORDER BY p.created_at DESC
-       LIMIT 200`
-    );
-    res.json({ success: true, data: rows.map(mapProduct) });
+    const page = Math.max(1, Math.floor(Number(req.query['page']) || 1));
+    const limit = Math.min(100, Math.max(1, Math.floor(Number(req.query['limit']) || 20)));
+    const offset = (page - 1) * limit;
+    const search = String(req.query['q'] || '').trim();
+    const categoryId = Number(req.query['categoryId']) || null;
+    const sortBy = String(req.query['sort'] || 'newest');
+
+    let where = 'WHERE p.is_deleted = false AND p.status = \'ACTIVE\'';
+    const params: any[] = [];
+    let paramIdx = 1;
+
+    if (search) {
+      where += ` AND (p.prod_name ILIKE $${paramIdx} OR p.prod_subtitle ILIKE $${paramIdx} OR p.prod_description ILIKE $${paramIdx})`;
+      params.push(`%${search}%`);
+      paramIdx++;
+    }
+    if (categoryId) {
+      where += ` AND p.category_id = $${paramIdx}`;
+      params.push(categoryId);
+      paramIdx++;
+    }
+
+    let orderBy = 'ORDER BY p.created_at DESC';
+    if (sortBy === 'priceLow') orderBy = 'ORDER BY p.prod_price ASC';
+    else if (sortBy === 'priceHigh') orderBy = 'ORDER BY p.prod_price DESC';
+
+    const [countResult, rows] = await Promise.all([
+      query<{ c: number }>(`SELECT COUNT(*)::int AS c FROM products p ${where}`, params),
+      query<ProductRow>(
+        `${PRODUCT_SELECT} ${where} ${orderBy} LIMIT $${paramIdx} OFFSET $${paramIdx + 1}`,
+        [...params, limit, offset]
+      ),
+    ]);
+
+    const total = countResult[0]?.c || 0;
+    res.json({
+      success: true,
+      data: rows.map(mapProduct),
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to load products' });
   }
@@ -142,5 +176,37 @@ catalogRouter.get('/api/ads', async (req: Request, res: Response) => {
     res.json({ success: true, data: rows });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to load ads' });
+  }
+});
+
+catalogRouter.post('/api/products/:id/reviews', async (req: Request, res: Response) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  try {
+    const productId = Number(req.params['id']);
+    if (!Number.isInteger(productId)) {
+      res.status(400).json({ success: false, error: 'Invalid product id' });
+      return;
+    }
+    const { rating, comment } = req.body || {};
+    const ratingNum = Number(rating);
+    if (!Number.isInteger(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      res.status(400).json({ success: false, error: 'Rating must be an integer between 1 and 5' });
+      return;
+    }
+    const prod = await query(`SELECT 1 FROM products WHERE product_id = $1 AND is_deleted = false AND status = 'ACTIVE'`, [productId]);
+    if (!prod.length) {
+      res.status(404).json({ success: false, error: 'Product not found' });
+      return;
+    }
+    const rows = await query<any>(
+      `INSERT INTO reviews (user_id, product_id, rating, comment, is_active, created_at)
+       VALUES ($1, $2, $3, $4, true, NOW())
+       RETURNING review_id AS id, rating, comment, created_at AS "createdAt"`,
+      [user.userId, productId, ratingNum, String(comment || '').trim() || null]
+    );
+    res.status(201).json({ success: true, data: rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to submit review' });
   }
 });
