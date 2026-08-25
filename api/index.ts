@@ -4,7 +4,7 @@ let cached: any = null;
 
 async function getHandler() {
   if (cached) return cached;
-  const mod = await import(join(process.cwd(), 'dist/skuvo/server/server.mjs'));
+  const mod = await import(join(process.cwd(), 'dist', 'skuvo', 'server', 'server.mjs'));
   cached = mod.reqHandler;
   return cached;
 }
