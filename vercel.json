@@ -5,9 +5,7 @@
   "framework": null,
   "functions": {
     "dist/skuvo/server/server.mjs": {
-      "includeFiles": [
-        "dist/skuvo/browser/**"
-      ],
+      "includeFiles": "dist/skuvo/browser/**",
       "maxDuration": 30
     }
   },
