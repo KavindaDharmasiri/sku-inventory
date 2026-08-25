@@ -140,9 +140,9 @@ export class AdminOrderDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.api.get<any[]>(`/admin/orders`).subscribe({
+    this.api.get<any>(`/admin/orders/${id}`).subscribe({
       next: (res) => {
-        this.order.set((res?.data || []).find((o: any) => o.id === id) || null);
+        this.order.set(res?.data || null);
         this.loading.set(false);
       },
       error: () => { this.toast.error('Failed to load order'); this.loading.set(false); },

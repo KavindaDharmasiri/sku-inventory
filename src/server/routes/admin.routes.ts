@@ -45,6 +45,59 @@ adminRouter.get('/api/admin/stats', async (_req: Request, res: Response) => {
   }
 });
 
+adminRouter.get('/api/admin/orders/:id', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
+  try {
+    const id = Number(req.params['id']);
+    if (!Number.isInteger(id)) {
+      res.status(400).json({ success: false, error: 'Invalid order id' });
+      return;
+    }
+    const rows = await query<any>(`SELECT * FROM orders WHERE id = $1`, [id]);
+    if (!rows.length) {
+      res.status(404).json({ success: false, error: 'Order not found' });
+      return;
+    }
+    const o = rows[0];
+    let items: any[] = [];
+    try {
+      items = await query<any>(
+        `SELECT oi.order_item_id AS id, oi.product_id AS "productId", p.prod_name AS "productName",
+                p.prod_img AS "productImage", oi.quantity, oi.price
+         FROM order_items oi
+         LEFT JOIN products p ON p.product_id = oi.product_id
+         WHERE oi.order_id = $1`,
+        [id]
+      );
+    } catch {
+      // order_items table may not exist
+    }
+    res.json({
+      success: true,
+      data: {
+        id: o.id,
+        orderNumber: o.order_number,
+        userId: o.user_id,
+        customerName: [o.first_name, o.last_name].filter(Boolean).join(' ') || o.email,
+        email: o.email,
+        total: Number(o.total) || 0,
+        subtotal: Number(o.subtotal) || 0,
+        tax: Number(o.tax) || 0,
+        discount: Number(o.discount) || 0,
+        shippingFee: Number(o.shipping_fee) || 0,
+        status: (o.status || 'pending').toLowerCase(),
+        paymentMethod: o.payment_method,
+        address: o.shipping_address,
+        items,
+        createdAt: o.created_at,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to load order' });
+  }
+});
+
 adminRouter.get('/api/admin/orders', async (_req: Request, res: Response) => {  try {
     const rows = await query<any>(`SELECT * FROM orders ORDER BY created_at DESC LIMIT 100`);
     res.json({

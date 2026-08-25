@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { CartService } from '../../core/services/cart.service';
 import { ToastService } from '../../core/services/toast.service';
+import { AuthService } from '../../core/services/auth.service';
 import { I18nService } from '../../core/services/i18n.service';
 import type { Product } from '../../core/models/api.model';
 import { CurrencyPipe } from '../../shared/pipes/pipes';
@@ -170,6 +171,19 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
                         {{ product.discountPercent || 'Sale' }}%
                       </span>
                     }
+                    @if (auth.isAuthenticated()) {
+                      <button (click)="toggleWishlist(product, $event)"
+                              class="absolute top-3 right-3 w-8 h-8 bg-white/90 dark:bg-neutral-900/90
+                                     backdrop-blur-sm rounded-full flex items-center justify-center
+                                     opacity-0 group-hover:opacity-100 transition-all duration-300
+                                     hover:scale-110 text-neutral-500 hover:text-error cursor-pointer shadow-lg">
+                        <svg class="w-4 h-4" [attr.fill]="wishlistedIds().has(product.id) ? 'currentColor' : 'none'"
+                             stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
+                        </svg>
+                      </button>
+                    }
                     <button (click)="addToCart(product, $event)"
                             class="absolute bottom-3 right-3 w-10 h-10 bg-white/90 dark:bg-neutral-900/90
                                    backdrop-blur-sm rounded-full flex items-center justify-center
@@ -237,6 +251,7 @@ export class ShopComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   cart = inject(CartService);
   private toast = inject(ToastService);
+  private auth = inject(AuthService);
   i18n = inject(I18nService);
 
   @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
@@ -254,6 +269,7 @@ export class ShopComponent implements OnInit, OnDestroy {
   currentPage = signal(1);
   totalProducts = signal(0);
   totalPages = signal(0);
+  wishlistedIds = signal<Set<number>>(new Set());
 
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
   private pendingCategory = '';
@@ -307,6 +323,7 @@ export class ShopComponent implements OnInit, OnDestroy {
     });
 
     this.loadProducts();
+    this.checkWishlist();
   }
 
   ngOnDestroy(): void {
@@ -365,6 +382,41 @@ export class ShopComponent implements OnInit, OnDestroy {
         this.loading.set(false);
       },
     });
+  }
+
+  private checkWishlist(): void {
+    if (!this.auth.isAuthenticated()) return;
+    this.api.get<any[]>('/wishlist').subscribe({
+      next: (res) => {
+        const ids = new Set<number>((res?.data || []).map((w: any) => Number(w.productId || w.id)));
+        this.wishlistedIds.set(ids);
+      },
+      error: () => {},
+    });
+  }
+
+  toggleWishlist(product: Product, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const id = product.id;
+    const isCurrently = this.wishlistedIds().has(id);
+    if (isCurrently) {
+      this.api.delete<any>(`/wishlist/${id}`).subscribe({
+        next: () => {
+          this.wishlistedIds.update(s => { const n = new Set(s); n.delete(id); return n; });
+          this.toast.success('Removed from wishlist');
+        },
+        error: () => { this.toast.error('Failed to remove from wishlist'); },
+      });
+    } else {
+      this.api.post<any>(`/wishlist/${id}`, {}).subscribe({
+        next: () => {
+          this.wishlistedIds.update(s => { const n = new Set(s); n.add(id); return n; });
+          this.toast.success('Added to wishlist');
+        },
+        error: () => { this.toast.error('Failed to add to wishlist'); },
+      });
+    }
   }
 
   private loadCategories(): void {

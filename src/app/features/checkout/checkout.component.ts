@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -38,6 +38,38 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
               @if (error()) {
                 <div class="mb-4 px-4 py-3 bg-error/5 border border-error/20 rounded-lg text-sm text-error">
                   {{ error() }}
+                </div>
+              }
+              @if (addresses().length > 0) {
+                <div class="mb-5">
+                  <p class="text-xs font-medium text-neutral-500 mb-3">Use saved address</p>
+                  <div class="space-y-2">
+                    @for (addr of addresses(); track addr.id) {
+                      <label class="flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors"
+                             [class]="selectedAddressId() === addr.id
+                               ? 'border-primary bg-primary/5'
+                               : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'">
+                        <input type="radio" name="savedAddress" [value]="addr.id"
+                               [checked]="selectedAddressId() === addr.id"
+                               (change)="selectAddress(addr)"
+                               class="mt-0.5 accent-primary">
+                        <div class="text-sm">
+                          <span class="font-medium text-neutral-900 dark:text-white">{{ addr.firstName }} {{ addr.lastName }}</span>
+                          <p class="text-neutral-500 text-xs mt-0.5">{{ addr.address }}{{ addr.apartment ? ', ' + addr.apartment : '' }}, {{ addr.city }}, {{ addr.state }} {{ addr.zipCode }}</p>
+                        </div>
+                      </label>
+                    }
+                    <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors"
+                           [class]="selectedAddressId() === null
+                             ? 'border-primary bg-primary/5'
+                             : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'">
+                      <input type="radio" name="savedAddress" value=""
+                             [checked]="selectedAddressId() === null"
+                             (change)="clearAddress()"
+                             class="mt-0.5 accent-primary">
+                      <span class="text-sm font-medium text-neutral-900 dark:text-white">Use a different address</span>
+                    </label>
+                  </div>
                 </div>
               }
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -110,6 +142,15 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
                 }
               </div>
               <hr class="my-4 border-neutral-100 dark:border-neutral-800">
+              <div class="flex gap-2 mb-4">
+                <input type="text" placeholder="Coupon code" [value]="couponCode()"
+                       (input)="couponCode.set($any($event.target).value)"
+                       class="field flex-1">
+                <button type="button" (click)="applyCoupon()"
+                        class="px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 text-sm font-medium text-neutral-700 dark:text-neutral-300 rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                  Apply
+                </button>
+              </div>
               <div class="space-y-2.5 text-sm">
                 <div class="flex justify-between text-neutral-600 dark:text-neutral-400">
                   <span>Subtotal</span><span>{{ cart.total() | currency }}</span>
@@ -154,7 +195,7 @@ import { CurrencyPipe } from '../../shared/pipes/pipes';
     }
   `],
 })
-export class CheckoutComponent {
+export class CheckoutComponent implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private router = inject(Router);
@@ -164,6 +205,10 @@ export class CheckoutComponent {
 
   placing = signal(false);
   error = signal('');
+  addresses = signal<any[]>([]);
+  selectedAddressId = signal<number | null>(null);
+  couponCode = signal('');
+  couponApplied = signal(false);
 
   form = {
     firstName: '', lastName: '',
@@ -180,6 +225,47 @@ export class CheckoutComponent {
 
   grandTotal(): number {
     return Math.round((this.cart.total() + this.tax()) * 100) / 100;
+  }
+
+  ngOnInit(): void {
+    if (this.auth.isAuthenticated()) {
+      this.api.get<any[]>('/addresses').subscribe({
+        next: (res) => {
+          if (res?.success && res.data) {
+            this.addresses.set(res.data);
+          }
+        },
+      });
+    }
+  }
+
+  selectAddress(addr: any): void {
+    this.selectedAddressId.set(addr.id);
+    this.form.firstName = addr.firstName || '';
+    this.form.lastName = addr.lastName || '';
+    this.form.address = addr.address || '';
+    this.form.apartment = addr.apartment || '';
+    this.form.city = addr.city || '';
+    this.form.state = addr.state || '';
+    this.form.zipCode = addr.zipCode || '';
+    this.form.phone = addr.phone || '';
+  }
+
+  clearAddress(): void {
+    this.selectedAddressId.set(null);
+    this.form.firstName = '';
+    this.form.lastName = '';
+    this.form.address = '';
+    this.form.apartment = '';
+    this.form.city = '';
+    this.form.state = '';
+    this.form.zipCode = '';
+    this.form.phone = '';
+  }
+
+  applyCoupon(): void {
+    // TODO: Implement real coupon validation via POST /api/cart/validate-coupon
+    this.toast.info('Coupon validation coming soon');
   }
 
   placeOrder(): void {
