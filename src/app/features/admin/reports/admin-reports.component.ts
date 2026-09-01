@@ -287,7 +287,7 @@ export class AdminReportsComponent implements OnInit {
     { value: 'custom', label: 'Custom' },
   ];
 
-  summaryCards = computed(() => {
+  summaryCards = computed<{ label: string; value: string; sub?: string }[]>(() => {
     const s = this.summary();
     if (!s) return [];
     const tab = this.activeTab();

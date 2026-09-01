@@ -1,7 +1,18 @@
 import type { Request } from 'express';
+import { createRequire } from 'node:module';
+
+const require_ = createRequire(import.meta.url);
 
 let _bcrypt: any;
 let _jwt: any;
+
+// jsonwebtoken is loaded eagerly at module init so `authUser` works immediately
+// (not only after the first signToken call).
+try {
+  _jwt = require_('jsonwebtoken');
+} catch {
+  _jwt = null;
+}
 
 async function bcrypt(): Promise<any> {
   if (!_bcrypt) _bcrypt = (await import('bcryptjs')).default;

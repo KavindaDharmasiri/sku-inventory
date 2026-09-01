@@ -7,7 +7,30 @@ export const adminRouter = Router();
 
 /* ----------------------------- Admin ---------------------------- */
 
-adminRouter.get('/api/admin/stats', async (_req: Request, res: Response) => {
+export async function logAudit(
+  user: { userId: number; email: string } | null,
+  req: Request,
+  action: string,
+  entityType: string,
+  entityId: string | number,
+  metadata?: unknown,
+): Promise<void> {
+  const meta = metadata === undefined ? null : JSON.stringify(metadata);
+  try {
+    await query(
+      `INSERT INTO audit_trails (user_id, user_email, action, entity_type, entity_id, metadata, ip_address, user_agent)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [user?.userId ?? null, user?.email ?? (req.ip || 'system'), action, entityType, String(entityId),
+       meta, req.ip || '-', String(req.headers['user-agent'] || '-')]
+    );
+  } catch {
+    // audit logging must never break the primary operation
+  }
+}
+
+adminRouter.get('/api/admin/stats', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const [products, users, categories, skus] = await Promise.all([
       query<{ c: number }>(`SELECT COUNT(*)::int AS c FROM products WHERE is_deleted = false`),
@@ -98,7 +121,10 @@ adminRouter.get('/api/admin/orders/:id', async (req: Request, res: Response) => 
   }
 });
 
-adminRouter.get('/api/admin/orders', async (_req: Request, res: Response) => {  try {
+adminRouter.get('/api/admin/orders', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
+  try {
     const rows = await query<any>(`SELECT * FROM orders ORDER BY created_at DESC LIMIT 100`);
     res.json({
       success: true,
@@ -125,7 +151,9 @@ adminRouter.get('/api/admin/orders', async (_req: Request, res: Response) => {  
   }
 });
 
-adminRouter.get('/api/admin/users', async (_req: Request, res: Response) => {
+adminRouter.get('/api/admin/users', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const rows = await query<any>(
       `SELECT id, email, user_type AS "userType", first_name AS "firstName", last_name AS "lastName",
@@ -138,7 +166,9 @@ adminRouter.get('/api/admin/users', async (_req: Request, res: Response) => {
   }
 });
 
-adminRouter.get('/api/admin/coupons', async (_req: Request, res: Response) => {
+adminRouter.get('/api/admin/coupons', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const rows = await query<any>(
       `SELECT coupon_id AS id, code, description, discount_type AS "discountType",
@@ -153,7 +183,9 @@ adminRouter.get('/api/admin/coupons', async (_req: Request, res: Response) => {
   }
 });
 
-adminRouter.get('/api/admin/discounts', async (_req: Request, res: Response) => {
+adminRouter.get('/api/admin/discounts', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const rows = await query<any>(
       `SELECT d.discount_id AS id, d.scope, d.discount_type AS "discountType",
@@ -172,7 +204,9 @@ adminRouter.get('/api/admin/discounts', async (_req: Request, res: Response) => 
   }
 });
 
-adminRouter.get('/api/admin/ads', async (_req: Request, res: Response) => {
+adminRouter.get('/api/admin/ads', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const rows = await query<any>(
       `SELECT banner_id AS id, title, image_url AS "imageUrl", link_url AS link,
@@ -185,7 +219,9 @@ adminRouter.get('/api/admin/ads', async (_req: Request, res: Response) => {
   }
 });
 
-adminRouter.get('/api/admin/subcategories', async (_req: Request, res: Response) => {
+adminRouter.get('/api/admin/subcategories', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const rows = await query<any>(
       `SELECT s.sub_category_id AS id, s.name, s.description, s.category_id AS "categoryId",
@@ -212,8 +248,9 @@ adminRouter.post('/api/admin/categories', async (req: Request, res: Response) =>
       `INSERT INTO categories (name, description, is_active, updated_at)
        VALUES ($1, $2, true, NOW())
        RETURNING category_id AS id, name`,
-      [name, String(req.body?.description || '').trim() || null]
+       [name, String(req.body?.description || '').trim() || null]
     );
+    await logAudit(user, req, 'category_created', 'category', rows[0].id, { name });
     res.status(201).json({ success: true, data: rows[0] });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to create category' });
@@ -236,13 +273,16 @@ adminRouter.post('/api/admin/subcategories', async (req: Request, res: Response)
        RETURNING sub_category_id AS id, name`,
       [name, String(req.body?.description || '').trim() || null, categoryId]
     );
+    await logAudit(user, req, 'subcategory_created', 'subcategory', rows[0].id, { name });
     res.status(201).json({ success: true, data: rows[0] });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to create subcategory' });
   }
 });
 
-adminRouter.get('/api/admin/audit', async (_req: Request, res: Response) => {
+adminRouter.get('/api/admin/audit', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const rows = await query<any>(
       `SELECT audit_id AS id, user_email AS "userEmail", action, entity_type AS "entityType",
@@ -255,7 +295,9 @@ adminRouter.get('/api/admin/audit', async (_req: Request, res: Response) => {
   }
 });
 
-adminRouter.get('/api/admin/reports', async (_req: Request, res: Response) => {
+adminRouter.get('/api/admin/reports', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const bestSellers = await query<any>(
       `SELECT oi.product_name AS "productName", SUM(oi.quantity)::int AS "unitsSold",
@@ -322,6 +364,7 @@ adminRouter.post('/api/admin/products', async (req: Request, res: Response) => {
     if (Array.isArray(b.skus)) await syncSkus(productId, baseSku, b.skus);
     if (Array.isArray(b.images)) await syncImages(productId, b.images);
     if (Array.isArray(b.specs)) await syncSpecs(productId, b.specs);
+    await logAudit(user, req, 'product_created', 'product', productId, { name });
     res.status(201).json({ success: true, data: { id: productId } });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to create product' });
@@ -583,6 +626,7 @@ adminRouter.put('/api/admin/products/:id', async (req: Request, res: Response) =
     if (Array.isArray(b.skus)) await syncSkus(id, baseSku, b.skus);
     if (Array.isArray(b.images)) await syncImages(id, b.images);
     if (Array.isArray(b.specs)) await syncSpecs(id, b.specs);
+    await logAudit(user, req, 'product_updated', 'product', id, { name });
     res.json({ success: true, data: rows[0] });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to update product' });
@@ -649,6 +693,7 @@ adminRouter.post('/api/admin/products/:id/specs', async (req: Request, res: Resp
       [pid, name, String(req.body?.description || '').trim(), orderNo]
     );
     await insertSpecAttrs(ins[0].id, type, req.body?.attributes);
+    await logAudit(user, req, 'spec_created', 'product_spec', ins[0].id, { productId: pid, name });
     res.status(201).json({ success: true, data: { id: ins[0].id } });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to create specification' });
@@ -678,6 +723,7 @@ adminRouter.put('/api/admin/products/:id/specs/:specId', async (req: Request, re
     const type = req.body?.type === 'color' ? 'color' : 'text';
     await query(`DELETE FROM product_spec_attrs WHERE spec_id = $1`, [specId]);
     await insertSpecAttrs(specId, type, req.body?.attributes);
+    await logAudit(user, req, 'spec_updated', 'product_spec', specId, { productId: pid, name });
     res.json({ success: true, data: { id: specId } });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to update specification' });
@@ -696,6 +742,7 @@ adminRouter.delete('/api/admin/products/:id/specs/:specId', async (req: Request,
       res.status(404).json({ success: false, error: 'Specification not found' });
       return;
     }
+    await logAudit(user, req, 'spec_deleted', 'product_spec', specId, { productId: pid });
     res.json({ success: true, data: { id: specId } });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to delete specification' });
@@ -789,6 +836,7 @@ adminRouter.post('/api/admin/products/:id/skus/generate', async (req: Request, r
       );
     }
 
+    await logAudit(user, req, 'skus_generated', 'product', pid, { created: toCreate.length });
     res.status(201).json({ success: true, data: await loadProductSkus(pid) });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to generate SKUs' });
@@ -819,6 +867,7 @@ adminRouter.put('/api/admin/products/:id/skus/:skuId', async (req: Request, res:
       res.status(404).json({ success: false, error: 'SKU not found' });
       return;
     }
+    await logAudit(user, req, 'sku_updated', 'product_sku', skuId, { productId: pid, price, stock });
     res.json({ success: true, data: { id: skuId } });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to update SKU' });
@@ -882,10 +931,11 @@ adminRouter.post('/api/admin/coupons', async (req: Request, res: Response) => {
        RETURNING coupon_id AS id, code, description, discount_type AS "discountType",
                  discount_value::float8 AS "discountValue", min_subtotal::float8 AS "minSubtotal",
                  valid_from AS "validFrom", valid_until AS "validUntil", is_active AS "isActive", max_uses AS "maxUses"`,
-      [code, String(b.description || '').trim() || null, discountType, discountValue,
-       Number(b.minSubtotal) || 0, b.validFrom || null, b.validUntil || null,
-       b.isActive !== false, Number(b.maxUses) || null]
+       [code, String(b.description || '').trim() || null, discountType, discountValue,
+        Number(b.minSubtotal) || 0, b.validFrom || null, b.validUntil || null,
+        b.isActive !== false, Number(b.maxUses) || null]
     );
+    await logAudit(user, req, 'coupon_created', 'coupon', rows[0].id, { code });
     res.status(201).json({ success: true, data: rows[0] });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to create coupon' });
@@ -920,6 +970,7 @@ adminRouter.put('/api/admin/coupons/:id', async (req: Request, res: Response) =>
       res.status(404).json({ success: false, error: 'Coupon not found' });
       return;
     }
+    await logAudit(user, req, 'coupon_updated', 'coupon', id, { code });
     res.json({ success: true, data: rows[0] });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to update coupon' });
@@ -936,6 +987,7 @@ adminRouter.delete('/api/admin/coupons/:id', async (req: Request, res: Response)
       res.status(404).json({ success: false, error: 'Coupon not found' });
       return;
     }
+    await logAudit(user, req, 'coupon_deleted', 'coupon', id);
     res.json({ success: true });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to delete coupon' });
@@ -961,9 +1013,10 @@ adminRouter.post('/api/admin/discounts', async (req: Request, res: Response) => 
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
        RETURNING discount_id AS id, scope, discount_type AS "discountType", discount_value::float8 AS "discountValue",
                  valid_from AS "validFrom", valid_until AS "validUntil", is_active AS "isActive"`,
-      [scope, discountType, discountValue, b.productId || null, b.categoryId || null, b.subCategoryId || null,
-       b.validFrom || null, b.validUntil || null, b.isActive !== false]
+       [scope, discountType, discountValue, b.productId || null, b.categoryId || null, b.subCategoryId || null,
+        b.validFrom || null, b.validUntil || null, b.isActive !== false]
     );
+    await logAudit(user, req, 'discount_created', 'discount', rows[0].id, { scope, discountValue });
     res.status(201).json({ success: true, data: rows[0] });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to create discount' });
@@ -997,6 +1050,7 @@ adminRouter.put('/api/admin/discounts/:id', async (req: Request, res: Response) 
       res.status(404).json({ success: false, error: 'Discount not found' });
       return;
     }
+    await logAudit(user, req, 'discount_updated', 'discount', id, { scope, discountValue });
     res.json({ success: true, data: rows[0] });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to update discount' });
@@ -1013,6 +1067,7 @@ adminRouter.delete('/api/admin/discounts/:id', async (req: Request, res: Respons
       res.status(404).json({ success: false, error: 'Discount not found' });
       return;
     }
+    await logAudit(user, req, 'discount_deleted', 'discount', id);
     res.json({ success: true });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to delete discount' });
@@ -1031,6 +1086,7 @@ adminRouter.delete('/api/admin/categories/:id', async (req: Request, res: Respon
       res.status(404).json({ success: false, error: 'Category not found' });
       return;
     }
+    await logAudit(user, req, 'category_deleted', 'category', id);
     res.json({ success: true });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to delete category' });
@@ -1047,6 +1103,7 @@ adminRouter.delete('/api/admin/subcategories/:id', async (req: Request, res: Res
       res.status(404).json({ success: false, error: 'Subcategory not found' });
       return;
     }
+    await logAudit(user, req, 'subcategory_deleted', 'subcategory', id);
     res.json({ success: true });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Failed to delete subcategory' });
@@ -1075,6 +1132,8 @@ function groupExpr(groupBy?: string, dateCol = 'o.created_at') {
 
 // Sales report — revenue, orders, avg order value grouped by period
 adminRouter.get('/api/admin/reports/sales', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const { dateFrom, dateTo, groupBy } = req.query as Record<string, string>;
     const g = groupExpr(groupBy);
@@ -1106,6 +1165,8 @@ adminRouter.get('/api/admin/reports/sales', async (req: Request, res: Response) 
 
 // Transaction report — all orders with payment details
 adminRouter.get('/api/admin/reports/transactions', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const { dateFrom, dateTo, status } = req.query as Record<string, string>;
     const d = buildDateFilter('o.created_at', dateFrom, dateTo);
@@ -1114,8 +1175,8 @@ adminRouter.get('/api/admin/reports/transactions', async (req: Request, res: Res
     let idx = d.idx;
     if (status && status !== 'all') { extraWhere = ` AND LOWER(o.status) = $${idx++}`; params.push(status.toLowerCase()); }
     const rows = await query<any>(
-      `SELECT o.order_id AS "orderId", o.order_number AS "orderNumber",
-              o.customer_name AS "customerName", o.email,
+      `SELECT o.id AS "orderId", o.order_number AS "orderNumber",
+              COALESCE(NULLIF(o.first_name, '') || ' ' || NULLIF(o.last_name, ''), o.email) AS "customerName", o.email,
               o.total::float8, o.discount::float8, o.tax::float8,
               o.shipping_fee::float8 AS "shippingFee",
               o.payment_method AS "paymentMethod",
@@ -1143,6 +1204,8 @@ adminRouter.get('/api/admin/reports/transactions', async (req: Request, res: Res
 
 // Product performance report
 adminRouter.get('/api/admin/reports/products', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const { dateFrom, dateTo } = req.query as Record<string, string>;
     const d = buildDateFilter('o.created_at', dateFrom, dateTo);
@@ -1152,10 +1215,10 @@ adminRouter.get('/api/admin/reports/products', async (req: Request, res: Respons
               COALESCE(SUM(oi.quantity), 0)::int AS "unitsSold",
               COALESCE(SUM(oi.subtotal), 0)::float8 AS "revenue",
               COALESCE(AVG(oi.price), 0)::float8 AS "avgPrice",
-              COUNT(DISTINCT o.order_id)::int AS "orderCount"
+              COUNT(DISTINCT o.id)::int AS "orderCount"
        FROM products p
        LEFT JOIN order_items oi ON oi.product_id = p.product_id
-       LEFT JOIN orders o ON o.order_id = oi.order_id AND o.status != 'cancelled'${d.where}
+       LEFT JOIN orders o ON o.id = oi.order_id AND o.status != 'cancelled'${d.where}
        WHERE p.is_deleted = false
        GROUP BY p.product_id, p.prod_name, p.prod_img
        ORDER BY "unitsSold" DESC`,
@@ -1167,7 +1230,7 @@ adminRouter.get('/api/admin/reports/products', async (req: Request, res: Respons
               COALESCE(SUM(oi.subtotal), 0)::float8 AS "totalRevenue"
        FROM products p
        LEFT JOIN order_items oi ON oi.product_id = p.product_id
-       LEFT JOIN orders o ON o.order_id = oi.order_id AND o.status != 'cancelled'${d.where}
+       LEFT JOIN orders o ON o.id = oi.order_id AND o.status != 'cancelled'${d.where}
        WHERE p.is_deleted = false`,
       d.params
     );
@@ -1179,6 +1242,8 @@ adminRouter.get('/api/admin/reports/products', async (req: Request, res: Respons
 
 // Order report — detailed order listing
 adminRouter.get('/api/admin/reports/orders', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const { dateFrom, dateTo, status } = req.query as Record<string, string>;
     const d = buildDateFilter('o.created_at', dateFrom, dateTo);
@@ -1187,13 +1252,13 @@ adminRouter.get('/api/admin/reports/orders', async (req: Request, res: Response)
     let idx = d.idx;
     if (status && status !== 'all') { extraWhere = ` AND LOWER(o.status) = $${idx++}`; params.push(status.toLowerCase()); }
     const rows = await query<any>(
-      `SELECT o.order_id AS "orderId", o.order_number AS "orderNumber",
-              o.customer_name AS "customerName", o.email,
+      `SELECT o.id AS "orderId", o.order_number AS "orderNumber",
+              COALESCE(NULLIF(o.first_name, '') || ' ' || NULLIF(o.last_name, ''), o.email) AS "customerName", o.email,
               o.total::float8, o.discount::float8, o.tax::float8,
               o.shipping_fee::float8 AS "shippingFee",
               LOWER(o.status) AS status,
               o.payment_method AS "paymentMethod",
-              (SELECT COUNT(*)::int FROM order_items oi2 WHERE oi2.order_id = o.order_id) AS "itemCount",
+              (SELECT COUNT(*)::int FROM order_items oi2 WHERE oi2.order_id = o.id) AS "itemCount",
               o.created_at AS "createdAt"
        FROM orders o
        WHERE 1=1${d.where}${extraWhere}
@@ -1218,13 +1283,15 @@ adminRouter.get('/api/admin/reports/orders', async (req: Request, res: Response)
 });
 
 // Inventory report — stock levels across all products/SKUs
-adminRouter.get('/api/admin/reports/inventory', async (_req: Request, res: Response) => {
+adminRouter.get('/api/admin/reports/inventory', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const rows = await query<any>(
       `SELECT p.product_id AS "productId", p.prod_name AS "productName",
               p.prod_img AS "productImage",
               COALESCE(SUM(s.stock), 0)::int AS "totalStock",
-              COUNT(s.sku_id)::int AS "skuCount",
+              COUNT(s.product_sku_id)::int AS "skuCount",
               COALESCE(MIN(s.stock), 0)::int AS "minStock",
               COALESCE(MAX(s.stock), 0)::int AS "maxStock",
               COALESCE(AVG(s.price), 0)::float8 AS "avgPrice",
@@ -1253,34 +1320,38 @@ adminRouter.get('/api/admin/reports/inventory', async (_req: Request, res: Respo
 
 // Customer report — spending and order history
 adminRouter.get('/api/admin/reports/customers', async (req: Request, res: Response) => {
+  const user = requireAdmin(req, res);
+  if (!user) return;
   try {
     const { dateFrom, dateTo } = req.query as Record<string, string>;
     const d = buildDateFilter('o.created_at', dateFrom, dateTo);
     const rows = await query<any>(
-      `SELECT u.user_id AS "userId", u.name AS "customerName", u.email,
-              COUNT(DISTINCT o.order_id)::int AS "totalOrders",
+      `SELECT u.id AS "userId",
+              COALESCE(NULLIF(u.first_name, '') || ' ' || NULLIF(u.last_name, ''), u.email) AS "customerName",
+              u.email,
+              COUNT(DISTINCT o.id)::int AS "totalOrders",
               COALESCE(SUM(o.total), 0)::float8 AS "totalSpent",
               COALESCE(AVG(o.total), 0)::float8 AS "avgOrderValue",
               MIN(o.created_at) AS "firstOrder",
               MAX(o.created_at) AS "lastOrder"
        FROM users u
-       LEFT JOIN orders o ON o.user_id = u.user_id AND o.status != 'cancelled'${d.where}
+       LEFT JOIN orders o ON o.user_id = u.id AND o.status != 'cancelled'${d.where}
        WHERE u.is_active = true
-       GROUP BY u.user_id, u.name, u.email
-       HAVING COUNT(DISTINCT o.order_id) > 0
+       GROUP BY u.id, u.first_name, u.last_name, u.email
+       HAVING COUNT(DISTINCT o.id) > 0
        ORDER BY "totalSpent" DESC`,
       d.params
     );
     const summary = await query<any>(
-      `SELECT COUNT(DISTINCT u.user_id)::int AS "activeCustomers",
-              COALESCE(AVG(sub.totalSpent), 0)::float8 AS "avgLifetimeValue",
-              COALESCE(MAX(sub.totalSpent), 0)::float8 AS "topSpender"
+      `SELECT (SELECT COUNT(*)::int FROM users WHERE is_active = true) AS "activeCustomers",
+              COALESCE(AVG(sub."totalSpent"), 0)::float8 AS "avgLifetimeValue",
+              COALESCE(MAX(sub."totalSpent"), 0)::float8 AS "topSpender"
        FROM (
-         SELECT u.user_id, COALESCE(SUM(o.total), 0)::float8 AS "totalSpent"
+         SELECT u.id, COALESCE(SUM(o.total), 0)::float8 AS "totalSpent"
          FROM users u
-         LEFT JOIN orders o ON o.user_id = u.user_id AND o.status != 'cancelled'${d.where}
+         LEFT JOIN orders o ON o.user_id = u.id AND o.status != 'cancelled'${d.where}
          WHERE u.is_active = true
-         GROUP BY u.user_id
+         GROUP BY u.id
        ) sub`,
       d.params
     );

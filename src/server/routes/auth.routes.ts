@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { query } from '../db';
 import { signToken, hashPassword, comparePassword } from '../middleware/auth';
 import { createAuthLimiter } from '../middleware/rate-limit';
+import { logAudit } from './admin.routes';
 
 export const authRouter = Router();
 const authLimiter = await createAuthLimiter();
@@ -51,6 +52,7 @@ authRouter.post('/api/auth/signin', authLimiter, async (req: Request, res: Respo
     );
     const dbUser = rows[0];
     if (!dbUser || !(await comparePassword(password, dbUser.password))) {
+      await logAudit(null, req, 'login_failed', 'auth', String(email).toLowerCase(), { email: String(email).toLowerCase() });
       res.status(401).json({ success: false, error: 'Invalid credentials' });
       return;
     }
@@ -65,6 +67,9 @@ authRouter.post('/api/auth/signin', authLimiter, async (req: Request, res: Respo
       firstName: dbUser.firstName,
       lastName: dbUser.lastName,
     };
+    if (String(dbUser.userType).toLowerCase() === 'admin') {
+      await logAudit({ userId: user.id, email: user.email }, req, 'admin_login', 'auth', user.id, { email: user.email });
+    }
     res.json({ success: true, token: await signToken(user), user });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error?.message || 'Sign in failed' });
