@@ -1,15 +1,16 @@
 import type { Request } from 'express';
-import { createRequire } from 'node:module';
-
-const require_ = createRequire(import.meta.url);
 
 let _bcrypt: any;
 let _jwt: any;
 
-// jsonwebtoken is loaded eagerly at module init so `authUser` works immediately
-// (not only after the first signToken call).
+// jsonwebtoken is loaded eagerly at module init (via the bundled dynamic import,
+// which the server build maps to an always-present chunk file) so `authUser`
+// works immediately. Using `import()` rather than `createRequire`/`require`
+// ensures it stays available in deployed/bundled environments (e.g. Vercel
+// serverless functions that ship only the dist output).
 try {
-  _jwt = require_('jsonwebtoken');
+  const m: any = await import('jsonwebtoken');
+  _jwt = m && m.default ? m.default : m;
 } catch {
   _jwt = null;
 }
